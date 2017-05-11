@@ -61,6 +61,8 @@ def detect_num_images(lif_path):
 
 def main():
     lif_path = args.lif_path
+    lif_name = os.path.basename(lif_path)
+    lif_dir = os.path.dirname(lif_path)
     
     metadata_process = ["showinf", "-nopix", "-omexml-only", lif_path]
     xml_string = subprocess.check_output(metadata_process)
@@ -77,7 +79,9 @@ def main():
     for im_number in im_list:
         name, size, resolution = parse_xml_metadata_2(xml_string, im_number)
         print "extracting", name
-        output_dir = "./proj_%s_%s_%s" % (lif_path, im_number, name.replace(" ", "_"))
+        output_dir_name = "proj_%s_%s_%s" % (lif_name, im_number, name.replace(" ", "_"))
+        output_dir = os.path.join(lif_dir, output_dir_name)
+
         if not os.path.exists(output_dir):
             os.makedirs(output_dir)
 

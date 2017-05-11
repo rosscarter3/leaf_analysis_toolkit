@@ -52,15 +52,16 @@ def main():
     sdx, sdy, sdz = 6, 6, 5
     sds = 6
 
-    output_dir = args.exp_dir
-    stack_dir = os.path.join(args.exp_dir, "stack")
-    outname = os.path.split(output_dir)[0][5:]
+    exp_dir = os.path.abspath(args.exp_dir)
+    stack_dir = os.path.join(exp_dir, "stack")
+    output_dir = exp_dir
+    outname = "_".join(os.path.basename(exp_dir).split('_')[1:-1])
 
     image3d = load_image_stack(stack_dir)
-
     greyscale_image_stack = np.amax(image3d, 3)
 
     max_proj = np.amax(greyscale_image_stack, axis=2)
+
 
     mpfilename = os.path.join(output_dir, "%s_max-proj.png" % outname)
     scipy.misc.imsave(mpfilename, max_proj)
