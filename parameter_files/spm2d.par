@@ -10,7 +10,7 @@ persistencestrength		3
 backgroundsubtraction		50		//neighbourhood over which background signal is calculated 
 gaussianblur			2		//radius of Gaussian kernel
 
-runtime				20000		//number of mcs used for segmentation
+runtime				10000		//number of mcs used for segmentation
 
 
 // secondary parameters

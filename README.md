@@ -38,9 +38,18 @@ Steps:
 | `[name]_proj-pp-clahe-g3d.png`| the post processed version of proj-g3d                       |
 | `[name]_surface-g3d.png`      | the surface used for the surface projection                  |
 
-`proj-g3d.png` and `proj-g3d_rev.png` differ in that the first assumes the confocal scan was performed from top to bottom (0th slice at top) and the second assumes the reverse (0th slice at bottom). Use your eyes to see which one looks best. These will both be segmented in the next step.
+`proj-g3d.png` and `proj-g3d_rev.png` differ in that the first assumes the confocal scan was performed from top to bottom (0th slice at top) and the second assumes the reverse (0th slice at bottom). If you know the scan direction, use that one, otherwise use your eyes to see which one looks best. These will both be segmented in the next step.
 
 ## Segmenting the projected images
+For building the Segmentation Potts Model from source use Excalib (please contact Stan Maree).
+
+To segment the results from the previous step run the following command:
+
+`python segment_from_dir.py [image_directory]`
+
+Where `[image_directory]` is the same directory created in the last step.
+
+This will create two sub-directories `segmented` and `segmented_rev` which will contain the segmentation output and then proceed to segment the two images created in the last step. This could take some time. This step can be completed on the NRP HPC if you have access, although scripts for that aren't provided here, yet.
 
 ## Correcting the segmentations
 
