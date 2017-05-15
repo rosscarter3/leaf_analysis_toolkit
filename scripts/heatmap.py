@@ -24,7 +24,7 @@ def read_dims(idir):
     dimstr = [float(s) for s in dimstr.split(",")]
     size_x, size_y, size_z = dimstr[0], dimstr[1], dimstr[2]
     voxel_x, voxel_y, voxel_z = dimstr[3], dimstr[4], dimstr[5]
-    return size_x, size_y, size_z, voxel_x, voxel_y, voxel_z
+    return (size_x, size_y, size_z), (voxel_x, voxel_y, voxel_z)
 
 
 def norm_var(idir, var):

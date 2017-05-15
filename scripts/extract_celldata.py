@@ -1,22 +1,15 @@
 #!/usr/bin/env python
 """extracts quantitative values from segmented images and writes to .csv file"""
-import sys
+
 import os
 import csv
-import datetime
+import json
 import argparse
 
 import numpy as np
-from PIL import Image
 import skimage.measure as skim
 
-import tensortools.functions as ttf
-
-
-def flush_message(message):
-    """flushes message to command line"""
-    print message,
-    sys.stdout.flush()
+import common_functions as cf
 
 
 def read_dims(idir):
@@ -42,78 +35,57 @@ def read_tip(idir):
 
 def main():
     """main function extracts and writes data"""
-    start_time = datetime.datetime.now()
-    idir = args.input_directory
-    # impath = os.path.join(idir, "00000_prefiltered.png")
-    impath = os.path.join(idir, "00000.png")
+    im_path = args.im_path
+    im_dir = os.path.dirname(im_path)
+    id_array = cf.path2id_array(im_path)
 
-    seg_image = Image.open(impath)
-    seg_image_array_rgb = np.asarray(seg_image, dtype="uint64")
+    _, _, _, voxel_x, voxel_y, _ = read_dims(im_dir)
+    # tip_x, tip_y, base_x, base_y = read_tip(idir)
 
-    cid_array = ttf.path2id_array(impath)
+    # theta = np.arctan((base_x-tip_x)/(base_y-tip_y))
 
-    print np.unique(cid_array)
+    # vxrot = voxel_x * np.cos(theta) - voxel_y * np.sin(theta)
+    # vyrot = voxel_x * np.sin(theta) + voxel_y * np.cos(theta)
 
-    _, _, _, voxel_x, voxel_y, _ = read_dims(idir)
-    tip_x, tip_y, base_x, base_y = read_tip(idir)
+    cell_ids = np.unique(id_array)
+    if 0 in cell_ids:
+        del cell_ids[cell_ids.index(0)]
 
-    theta = np.arctan((base_x-tip_x)/(base_y-tip_y))
+    cell_data_dict = {}
 
-    vxrot = voxel_x * np.cos(theta) - voxel_y * np.sin(theta)
-    vyrot = voxel_x * np.sin(theta) + voxel_y * np.cos(theta)
+    cell_props = skim.regionprops(id_array)
 
-    flush_message("Writing cell data... ")
-    with open(os.path.join(idir, "output_test.csv"), "w") as file_handle:
-        writer = csv.writer(file_handle)
+    for cell in cell_props:
+        cell_id = cell['label']
+        cell_info = {'Area_Real': cell['area'] * voxel_x * voxel_y,
+                     'Centroid_x_Pixels': cell['centroid'][1],
+                     'Centroid_y_Pixels': cell['centroid'][0],
+                     'Perimeter_Real': cell['perimeter'] * voxel_x}
 
-        writer.writerow(["cid",
-                         "x_centroid_pix",
-                         "y_centroid_pix",
-                         "area_pix",
-                         "x_centroid_re",
-                         "y_centroid_re",
-                         "area_re",
-                         "dist_mv_re",
-                         "dist_tip_re",
-                         "perimeter_pix",
-                         "eccentricity",
-                         "solidity"])
+        #ADD MORE STUFF HERE IF NEEDED
 
-        for cell in skim.regionprops(cid_array):
-            cid = cell.label
+        cell_data_dict[cell_id] = cell_info
 
-            xcentroid_pix = cell.centroid[1]
-            ycentroid_pix = cell.centroid[0]
+    csv_headings = [s for s in cell_info.iterkeys()]
+    csv_headings.insert(0, 'Cell_ID')
 
-            xcentroid_re = xcentroid_pix * voxel_x
-            ycentroid_re = ycentroid_pix * voxel_y
-            area_re = cell.area * voxel_x * voxel_y
-            xtr_pix = xcentroid_pix - tip_x
-            ytr_pix = ycentroid_pix - tip_y
-            xrot_pix = xtr_pix * np.cos(theta) - ytr_pix * np.sin(theta)
-            yrot_pix = xtr_pix * np.sin(theta) + ytr_pix * np.cos(theta)
-            xrot_re = xrot_pix * vxrot
-            yrot_re = yrot_pix * vyrot
+    csv_path = os.path.join(im_dir, "data.csv")
+    with open(csv_path, 'wb') as csv_file:
+        csvwriter = csv.writer(csv_file, delimiter=',')
+        csvwriter.writerow(csv_headings)
+        for cell_id, data_dict in cell_data_dict.iteritems():
+            data_list = [cell_id]
+            for data_type in csv_headings[1:]:
+                data_list.append(data_dict[data_type])
+            csvwriter.writerow(data_list)
 
-            writer.writerow([cid,
-                             xcentroid_pix,
-                             ycentroid_pix,
-                             cell.area,
-                             xcentroid_re,
-                             ycentroid_re,
-                             area_re,
-                             xrot_re,
-                             yrot_re,
-                             cell.perimeter,
-                             cell.eccentricity,
-                             cell.solidity])
-
-    print "Done"
-    print "Time: ", (datetime.datetime.now() - start_time)
+    json_path = os.path.join(im_dir, "data.json")
+    with open(json_path, 'w') as json_file:
+        json.dump(cell_data_dict, json_file, indent=2)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("input_directory", help="Input Directory")
+    parser.add_argument("im_path", help="Segmented Image")
     args = parser.parse_args()
 
     main()
