@@ -2,11 +2,8 @@ import os
 import argparse
 
 import numpy as np
-import skimage.exposure
-import skimage.segmentation
 import skimage.morphology
 import scipy.ndimage as nd
-from PIL import Image
 import matplotlib.pyplot as plt
 
 import common_functions as cf
@@ -26,7 +23,6 @@ def get_seeds_path(exp_dir):
         for f in filenames:
             if "seeds" in f:
                 seeds_path = os.path.abspath(os.path.join(dirpath, f))
-                print seeds_path
     return seeds_path
 
 
@@ -39,8 +35,8 @@ def watershed(im_path, seeds_path):
     seed_array_bool = np.ones_like(im)
     for i in xrange(seed_array.shape[0]):
         for j in xrange(seed_array.shape[1]):
-            if seed_array[i,j,0] == seed_array[i,j,1] == seed_array[i,j,2]:
-                seed_array_bool[i,j] = 0
+            if seed_array[i, j, 0] == seed_array[i, j, 1] == seed_array[i, j, 2]:
+                seed_array_bool[i, j] = 0
 
     seed_array_bool = skimage.morphology.label(seed_array_bool)
     seg = skimage.morphology.watershed(im, seed_array_bool)
@@ -52,6 +48,8 @@ def watershed(im_path, seeds_path):
 
     plt.imsave(seg_path, seg)
 
+    return 0
+
 
 def main():
     exp_dir = args.dir_path
@@ -59,10 +57,12 @@ def main():
     im_paths = get_im_paths(exp_dir)
     seeds_path = get_seeds_path(exp_dir)
 
-    print im_paths
-
     for im_path in im_paths:
-            watershed(im_path, seeds_path)
+        print "Segmenting: " + os.path.basename(im_path)
+        watershed(im_path, seeds_path)
+
+    return 0
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="")

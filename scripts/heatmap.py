@@ -1,183 +1,109 @@
 """generates heatmaps of variables, takes directory as argument and uses
 the segmented image and output.csv to calculate heatmaps. output to ./heatmaps"""
-import sys
-import os
-import datetime
-import csv
-import json
 
+import os
+import json
+import argparse
+
+import matplotlib
 import matplotlib.pyplot as plt
-import matplotlib.cm
-from matplotlib.colors import LogNorm
+from mpl_toolkits.axes_grid1 import make_axes_locatable
 import numpy as np
 
-from jicbioimage.illustrate import Canvas
-import tensortools.functions as ttf
-from celldata import CellData
+
+import common_functions as cf
 
 
-def read_dims(idir):
-    """reads dimensions file in idir and returns image dimensions
-    and voxel dimensions"""
-    with open(os.path.join(idir, "dims.txt"), 'r') as file_handle:
-        dimstr = file_handle.read()
-    dimstr = [float(s) for s in dimstr.split(",")]
-    size_x, size_y, size_z = dimstr[0], dimstr[1], dimstr[2]
-    voxel_x, voxel_y, voxel_z = dimstr[3], dimstr[4], dimstr[5]
-    return (size_x, size_y, size_z), (voxel_x, voxel_y, voxel_z)
-
-
-def norm_var(idir, var):
-    """returns dict with variable scaled as (v / max)"""
-    flush_message("Reading %s data... " % var)
-    vari = {}
-
-    with open(os.path.join(idir, "output.csv"), 'r') as file_handle:
-        reader = csv.DictReader(file_handle)
-        for row in reader:
-            vari[row["cid"]] = row[var]
-
-    max_vari = float(max(vari.itervalues()))
-    norm_vari = {k: (float(v) / max_vari) for k, v in vari.iteritems()}
-    print "Done"
-
-    return norm_vari
-
-
-def scaled_var(idir, var):
-    """returns dict with variable scaled as ((v - min) / max)"""
-    flush_message("Reading %s data... " % var)
-    vari = {}
-
-    with open(os.path.join(idir, "output.csv"), 'r') as file_handle:
-        reader = csv.DictReader(file_handle)
-        for row in reader:
-            vari[row["cid"]] = row[var]
-
-    min_vari = float(min(vari.itervalues()))
-    shifted_varis = {k: (float(v) - min_vari) for k, v in vari.iteritems()}
-    max_shifted = float(max(vari.itervalues()))
-    scaled_vari = {k: (float(v) / max_shifted) for k, v in shifted_varis.iteritems()}
-    print "Done"
-
-    return scaled_vari
-
-
-def flush_message(message):
-    """flushes message to command line"""
-    print message
-    sys.stdout.flush()
-
-
-def paint_cells(var, cdata, idir, posterise=False, scaled=False):
-    """creates a canvas and paints the scaled variable data to each cell"""
-    if scaled:
-        vari_dict = scaled_var(idir, var)
-    else:
-        vari_dict = norm_var(idir, var)
-
-    size_x, size_y, _, _, _, _ = read_dims(idir)
-    canvas = Canvas((size_x, size_y, 4))
-    canvas2 = Canvas((size_x, size_y))
-
-    var_list = list(vari_dict.itervalues())
-    var_list.remove(max(var_list))
-
-    color_scheme = 'Set1'
-    color_map = matplotlib.cm.ScalarMappable(cmap=color_scheme,
-                                             norm=LogNorm(vmin=min(var_list),
-                                                          vmax=max(var_list)))
-
-    # color_map.set_clim(vmin=min(var_list), vmax=max(var_list))
-
-    flush_message("Painting cells... ")
-    for (cid, cell) in cdata:
-        if cell.area < 4000:
-            cell_mask = np.zeros((size_x, size_y), dtype=bool)
-            for point in cell.pl:
-                cell_mask[point] = True
-            cell_id = vari_dict[str(cid)]
-            # canvas.mask_region(cell_mask, (0, cell_id * 255, 0))
-            color = color_map.to_rgba(cell_id)
-            canvas.mask_region(cell_mask, color)
-            canvas2.mask_region(cell_mask, cell_id)
-    print "Done"
-    with open(os.path.join(idir, "heatmaps/%s.png" % var), "wb") as file_handle:
-        file_handle.write(canvas.png())
-
-
-def load_json(idir):
-    json_path = os.path.join(idir, 'output_json.json')
+def load_json_data(exp_dir):
+    json_path = os.path.join(exp_dir, "data.json")
     with open(json_path, 'r') as json_handle:
         data_dict = json.load(json_handle)
     return data_dict
 
 
-def paint_cells2(var, cid_array, idir):
-    """creates a canvas and paints the scaled variable data to each cell"""
+def main():
+    exp_dir = args.exp_dir
+    seg_path = cf.get_seg_path(exp_dir)
+    id_array = cf.path2id_array(seg_path)
 
-    data_dict = load_json(idir)
+    data_dict = load_json_data(exp_dir)
 
-    shape = [cid_array.shape[0], cid_array.shape[1], 4]
-    canvas = np.zeros(shape)
-    canvas2 = np.zeros(shape)
-    var_list = []
+    outline_array = cf.generate_cell_outline_array(id_array)
 
-    for data in data_dict.itervalues():
-        var_list.append(data[var])
+    if not os.path.exists(os.path.join(exp_dir, "heatmaps")):
+        os.mkdir(os.path.join(exp_dir, "heatmaps"))
 
-    color_scheme = 'Set1'
-    color_map = matplotlib.cm.ScalarMappable(cmap=color_scheme)
-    color_map.set_clim(vmin=min(var_list), vmax=max(var_list))
+    random_data = data_dict.itervalues().next()
+    data_to_plot = random_data.keys()
 
-    flush_message("Painting cells... ")
+    size, vox = cf.read_dims(exp_dir)
 
-    cells = (np.unique(cid_array))
+    color_scheme = 'viridis'
+    heatmap_shape = [id_array.shape[0], id_array.shape[1], 4]
+    extent = [0, heatmap_shape[1] * vox[1], 0, heatmap_shape[0] * vox[0]]
 
-    for cid, data in data_dict.iteritems():
-        canvas[cid_array == int(cid)] = color_map.to_rgba(data[var])
+    xs, ys = [], []
+    for cell_data in data_dict.itervalues():
+        xs.append(cell_data['Centroid-x_um'])
+        ys.append(cell_data['Centroid-y_um'])
 
-    print "Done"
+    im_height = id_array.shape[1] * vox[1]
+    border = 0.07 * im_height
 
-    cell_outlines = ttf.generate_cell_outline_array(cid_array)
+    xlims = (min(xs) - border, max(xs) + border)
+    ylims = ((im_height - max(ys)) - border, (im_height - min(ys)) + border)
 
-    plt.imshow(canvas, interpolation='nearest')
-    plt.imshow(cell_outlines, interpolation='nearest')
-    plt.show()
+    def do_heatmap(data_type):
+        data_list = []
 
-    #with open(os.path.join(idir, "heatmaps/%s_from_json.png" % var), "wb") as file_handle:
-    #    file_handle.write(canvas)
+        def units_string(data_type):
+            units = data_type.split("_")[1]
+            if units == "um":
+                return r'$\mu$m'
+            if units == "um2":
+                return r'$\mu$m$^{2}$'
+            if units == "pixels":
+                return "Pixels"
+            else:
+                return ""
 
+        for cell_data in data_dict.itervalues():
+            data_list.append(cell_data[data_type])
+        print "Painting", data_type, ": ", min(data_list), max(data_list)
 
-def main(args):
-    """"reads the data and paints the pictures"""
-    start_time = datetime.datetime.now()
-    idir = args[1]
-    impath = os.path.join(idir, "00000.png")
+        color_map = matplotlib.cm.ScalarMappable(cmap=color_scheme)
+        color_map.set_clim(vmin=min(data_list), vmax=max(data_list))
 
-    mapsdir = os.path.join(idir, "heatmaps")
+        heatmap = np.full(shape=heatmap_shape, fill_value=[0, 0, 0, 255], dtype='float32')
 
-    cid_array = ttf.path2id_array(impath)
+        for cell_id, cell_data in data_dict.iteritems():
+            heatmap[id_array == int(cell_id)] = color_map.to_rgba(cell_data[data_type])
 
-    if not os.path.exists(mapsdir):
-        os.makedirs(mapsdir)
+        plt.figure(figsize=(10, 10))
+        ax1 = plt.subplot(111)
+        plt.title(data_type.split("_")[0])
+        plt.imshow(heatmap, cmap=color_scheme, interpolation='nearest', extent=extent)
+        plt.imshow(outline_array, cmap=color_scheme, interpolation='nearest', extent=extent)
+        plt.clim(min(data_list), max(data_list))
+        cf.add_scale_bar(ax1)
+        ax1.axis('on')
+        ax1.get_xaxis().set_ticks([])
+        ax1.get_yaxis().set_ticks([])
+        plt.xlim(xlims)
+        plt.ylim(ylims)
+        divider1 = make_axes_locatable(ax1)
+        cax1 = divider1.append_axes("right", size="5%", pad=0.05)
+        cbar = plt.colorbar(cax=cax1)
+        cbar.set_label(units_string(data_type))
+        plt.subplots_adjust(left=0.04, bottom=0.01, right=0.9, top=0.96, wspace=0.2, hspace=0.2)
+        plt.savefig(os.path.join(exp_dir, "heatmaps", data_type + ".png"), format='png', dpi=1000)
 
-    #cdata = CellData(impath)
+    for data_type in data_to_plot:
+        do_heatmap(data_type)
 
-    # paint_cells2("yrot_re", cid_array, idir)
-    # paint_cells("area_pix", cdata, idir)
-    # paint_cells("perimeter_pix", cdata, idir)
-    # paint_cells("solidity", cdata, idir, scaled=True)
-    # paint_cells("circularity", cdata, idir)
-    # paint_cells("eccentricity", cdata, idir)
-    # paint_cells("axis_ratio", cdata, idir)
-    # paint_cells("dist_tip_re", cdata, idir)
-    # paint_cells("dist_mv_re", cdata, idir)
-    # paint_cells("stomata", cdata, idir)
-    # paint_cells_invarea(cdata,idir)
-
-    print "Time: ", (datetime.datetime.now() - start_time)
-    print ""
 
 if __name__ == '__main__':
-    sys.exit(main(sys.argv))
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("exp_dir", help="Experiment Directory")
+    args = parser.parse_args()
+    main()

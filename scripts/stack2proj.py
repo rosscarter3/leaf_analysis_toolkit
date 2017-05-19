@@ -21,7 +21,7 @@ def load_image_stack(path):
     tiff_files = [f for f in os.listdir(path) if f.endswith("tiff")]
     im = imread(os.path.join(path, "stack0.tiff"))
 
-    shape = (im.shape[1], im.shape[0], len(tiff_files), 3)
+    shape = (im.shape[0], im.shape[1], len(tiff_files), 3)
 
     stack = np.zeros(shape, dtype=np.uint8)
 

@@ -9,6 +9,27 @@ import numpy as np
 from PIL import Image
 
 
+def read_dims(idir):
+    """reads the dimensions file located in idir and returns
+       image and voxel dimensions"""
+
+    with open(os.path.join(idir, "dims.txt"), 'r') as file_handle:
+        dimstr = file_handle.read()
+    dimstr = [float(s) for s in dimstr.split(",")]
+    size_x, size_y, size_z = dimstr[0], dimstr[1], dimstr[2]
+    voxel_x, voxel_y, voxel_z = dimstr[3], dimstr[4], dimstr[5]
+    return (size_x, size_y, size_z), (voxel_x, voxel_y, voxel_z)
+
+
+def get_seg_path(exp_dir):
+    seg_path = ""
+    for dirpath, _, filenames in os.walk(exp_dir):
+        for f in filenames:
+            if "seg" in f:
+                seg_path = os.path.abspath(os.path.join(dirpath, f))
+    return seg_path
+
+
 def add_scale_bar(axis):
     xdim = axis.get_xlim()[1]
 
@@ -138,7 +159,7 @@ def generate_cell_outline_array(cid_array, color='black'):
                 if color == 'black':
                     outline_array[i][j] = [0, 0, 0, 1]
                 elif color == 'white':
-                    outline_array[i][j] = [1 ,1, 1, 1]
+                    outline_array[i][j] = [1, 1, 1, 1]
                 else:
                     raise ValueError("Color must be black or white")
 

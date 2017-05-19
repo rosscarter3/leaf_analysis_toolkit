@@ -14,13 +14,13 @@ Steps:
 
 	`python lif2stack.py example.lif`
 	
-	creates a separate directory for each stack in the .lif file of the format:
+	creates a separate directory for each stack in the .lif file of the format (hereafter called the experiment directory):
 	
 	 `proj_[lif_name]_[image number]_[image_name]`
 	 
 	 i.e., `proj_8DAS_AA_Col.lif_0_Series013`
 	 
-	 for the 0th image, named 'Series013', in .lif file named `8DAS_AA_Col.lif`.
+	 for the 0th image, named 'Series013', from the .lif file named `8DAS_AA_Col.lif`.
 	 
 	 This directory contains a directory called 'stack' containing the png form of the image stack and a file called 'dims.txt' which contains the image metadata. The 'proj' directory will contain all further output relating to that image.
 	
@@ -41,6 +41,7 @@ Steps:
 `proj-g3d.png` and `proj-g3d_rev.png` differ in that the first assumes the confocal scan was performed from top to bottom (0th slice at top) and the second assumes the reverse (0th slice at bottom). If you know the scan direction, use that one, otherwise use your eyes to see which one looks best. These will both be segmented in the next step.
 
 ## Segmenting the projected images
+#### Using SPM
 For building the Segmentation Potts Model from source use Excalib (please contact Stan Maree).
 
 To segment the results from the previous step run the following command:
@@ -49,24 +50,47 @@ To segment the results from the previous step run the following command:
 
 Where `[image_directory]` is the same directory created in the last step.
 
-This will create two sub-directories `segmented` and `segmented_rev` which will contain the segmentation output and then proceed to segment the two images created in the last step. This could take some time. This step can be completed on the NRP HPC if you have access, although scripts for that aren't provided here, yet.
+This will create two sub-directories `segmented` and `segmented_rev` which will contain the segmentation output and then proceed to segment the two images created in the last step. This could take some time. When segmentation is finished two files, "fwd_seg.png" and "rev_seg.png" will be in the experiment directory.
 
-## Correcting the segmentations
+This step can be completed on the NRP HPC if you have access, although scripts for that aren't provided here, yet.
 
+#### Using watershed with manual seeds
+Using watershed requires the generation of a 'manual seeds' file.
+
+## The "tip.txt" file
+Open one of the leaf images in a image editing program (I use [GIMP](https://www.gimp.org)) and hover the cursor over the tip of the leaf. Make a note of the pixel coordinates, normally reported as x,y (bottom left of window in GIMP). Do the same for a point in the middle of the base of the leaf (see image).
+
+Make a file named "tip.txt" in the image directory and write the numbers in the following format:
+
+`Y_tip,X_tip,Y_base,X_base`
+
+e.g. `523,765,1043,512`
+
+and save the file. This is needed to calculate the cell centroids relative to the tip and the mid vein (transform from image coordinates to leaf coordinates)
+
+<img src="tip_example.png" alt="Tip Example" style="width: 400px;"/>
 ## Extracting the data
 
-## Tracking the cells for time series data
+
+## Generating heat maps
+
+## Conclusion
+
+|File/Directory name            | Description                                                  |
+--------------------------------| --------------------------------------------------------------
+|             |              |
+
 
 ## Other provided scripts
 `.\scripts\proj_lib.py` contains functions for projecting stacks, used by other scripts
 
 `.\scripts\projpp_lib.py` contains functions for post-processing projected images, used by other scripts
 
-`.\scripts\common_functions.py` contains common functions, written by Ross, for performing analysis, plotting, etc. used by other scripts. Not all functions are used.
+`.\scripts\common_functions.py` contains common functions, written by Ross, for loading images/data,  performing analysis, plotting, etc. used by other scripts. Not all functions are used at the moment.
 
 
 # Contacts
-In the first instance, Ross Carter (rosscarter33@gmail.com)
+In the first instance, Ross Carter (ross.carter@jic.ac.uk / rosscarter33@gmail.com)
 
 For image segmentation and SPM compilation etc., Stan Maree (stan.maree@jic.ac.uk)
 
