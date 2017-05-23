@@ -14,19 +14,24 @@ import numpy as np
 import common_functions as cf
 
 
-def load_json_data(exp_dir):
-    json_path = os.path.join(exp_dir, "data.json")
+def load_json_data(json_path):
     with open(json_path, 'r') as json_handle:
-        data_dict = json.load(json_handle)
-    return data_dict
+        return json.load(json_handle)
 
 
 def main():
     exp_dir = args.exp_dir
     seg_path = cf.get_seg_path(exp_dir)
+    if not os.path.exists(seg_path):
+        print "Segmented Image not found\n"
+        return
     id_array = cf.path2id_array(seg_path)
 
-    data_dict = load_json_data(exp_dir)
+    data_path = os.path.join(exp_dir, "data.json")
+    if not os.path.exists(data_path):
+        print "Data json file not found"
+        return
+    data_dict = load_json_data(data_path)
 
     outline_array = cf.generate_cell_outline_array(id_array)
 

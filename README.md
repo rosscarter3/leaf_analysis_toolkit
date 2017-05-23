@@ -42,7 +42,7 @@ Steps:
 
 ## Segmenting the projected images
 #### Using SPM
-For building the Segmentation Potts Model from source use Excalib (please contact Stan Maree).
+For building the Segmentation Potts Model from source use Excalib (please contact [Stan Maree](mailto:stan.maree@jic.ac.uk)).
 
 To segment the results from the previous step run the following command:
 
