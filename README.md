@@ -69,16 +69,36 @@ e.g. `523,765,1043,512`
 and save the file. This is needed to calculate the cell centroids relative to the tip and the mid vein (transform from image coordinates to leaf coordinates)
 
 <img src="tip_example.png" alt="Tip Example" style="width: 400px;"/>
+
 ## Extracting the data
 
 
 ## Generating heat maps
 
+## Batch Processing
+The shell script `./scripts/analyse_all.sh` can be used to batch process an number of images serially.
+
+To run type the following command in the scripts directory:
+
+`sh analyse_all.sh [process] [path to directories]`
+
+Where `[process]` is one of: project, segment, extract or heatmap. Each step depends on the previous and will not run on a directory that does not contain the output from the previous step.
+
+## Updating
+To update change directory to `leaf_analysis_toolkit`:
+
+`cd ~/tools/leaf_analysis_toolkit`
+
+and pull the latest version from GitHub"
+
+`git pull`
+
+
 ## Conclusion
 
 |File/Directory name            | Description                                                  |
 --------------------------------| --------------------------------------------------------------
-|             |              |
+|                               |                                                              |
 
 
 ## Other provided scripts
@@ -88,6 +108,7 @@ and save the file. This is needed to calculate the cell centroids relative to th
 
 `.\scripts\common_functions.py` contains common functions, written by Ross, for loading images/data,  performing analysis, plotting, etc. used by other scripts. Not all functions are used at the moment.
 
+## Example Workflow
 
 # Contacts
 In the first instance, Ross Carter (ross.carter@jic.ac.uk / rosscarter33@gmail.com)

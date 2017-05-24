@@ -48,6 +48,13 @@ def watershed(im_path, seeds_path):
     seg = skimage.morphology.watershed(im, seed_array_bool)
     seg[np.where(seg == seg[0, 0])] = 0
 
+    seg_col = seg
+    color_path = os.path.join(im_path + "colorful.png")
+    plt.imshow(im, cmap='gray_r')
+    plt.imshow(seg_col, alpha=0.6,cmap='Set1')
+    plt.subplots_adjust(left=0.04, bottom=0.01, right=0.9, top=0.96, wspace=0.2, hspace=0.2)
+    plt.savefig(color_path, dpi=400)
+
     seg = cf.id_array2rgb(seg)
     seg_path = os.path.join(im_path + "ws_seg.png")
     plt.imsave(seg_path, seg)
