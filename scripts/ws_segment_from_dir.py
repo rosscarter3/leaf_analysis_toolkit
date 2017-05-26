@@ -25,7 +25,6 @@ def get_seeds_path(exp_dir):
     for dirpath, _, filenames in os.walk(exp_dir):
         for f in filenames:
             if "manual" in f:
-                print f
                 seeds_path = os.path.abspath(os.path.join(dirpath, f))
     return seeds_path
 
@@ -50,8 +49,9 @@ def watershed(im_path, seeds_path):
 
     seg_col = seg
     color_path = os.path.join(im_path + "colorful.png")
+    rand_col = cf.rand_cmap(len(np.unique(seg_col)), verbose=False)
     plt.imshow(im, cmap='gray_r')
-    plt.imshow(seg_col, alpha=0.6,cmap='Set1')
+    plt.imshow(seg_col, alpha=0.6,cmap=rand_col)
     plt.subplots_adjust(left=0.04, bottom=0.01, right=0.9, top=0.96, wspace=0.2, hspace=0.2)
     plt.savefig(color_path, dpi=400)
 

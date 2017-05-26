@@ -3,10 +3,8 @@
 
 
 for d in ${1}/*; do
-    if [[ ${d} == *'BL'* ]];
-    then
+    if [[ ${d} == *'proj_'* ]]; then
         echo ${d}
-
         if [ ${2} == 'project' ]; then
             python ./stack2proj.py ${d}
         elif [ ${2} == 'segment' ]; then
@@ -18,15 +16,5 @@ for d in ${1}/*; do
         else
             echo "No process selected"
         fi
-
-#        for f in ${d}/*; do
-#            echo ${f}
-#            if [[ ${f} == *'seg.png' ]];
-#            then
-#                rm -r ${f}
-#            fi
-#        done
-
-
     fi
 done

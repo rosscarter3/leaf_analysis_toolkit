@@ -57,8 +57,8 @@ def main():
     if not os.path.exists(seg_path):
         print "No segmented image found\n"
         return
-    id_array = cf.path2id_array(seg_path)
 
+    id_array = cf.path2id_array(seg_path)
     size, voxel = cf.read_dims(exp_dir)
 
     tip_path = os.path.join(exp_dir, "tip.txt")
