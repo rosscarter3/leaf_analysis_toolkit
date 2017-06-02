@@ -100,7 +100,7 @@ def main():
         cax1 = divider1.append_axes("right", size="5%", pad=0.05)
         cbar = plt.colorbar(cax=cax1)
         cbar.set_label(units_string(data_type))
-        plt.subplots_adjust(left=0.04, bottom=0.01, right=0.9, top=0.96, wspace=0.2, hspace=0.2)
+
         plt.savefig(os.path.join(exp_dir, "heatmaps", data_type + ".png"), format='png', dpi=1000)
 
     for data_type in data_to_plot:
