@@ -75,7 +75,10 @@ def main():
     vxrot = voxel[1] * np.cos(theta) - voxel[0] * np.sin(theta)
     vyrot = voxel[1] * np.sin(theta) + voxel[0] * np.cos(theta)
 
-    # calcualte cell level data
+    print "vx_rot: ", vxrot
+    print "vy_rot: ", vyrot
+
+    # calculate cell level data
 
     cell_data_dict = {}
 
@@ -158,8 +161,6 @@ def main():
     for data_dict in cell_data_dict.itervalues():
         area += data_dict['Area_um2']
     leaf_data["leaf-area_um2"] = area
-
-
 
     leaf_data_csv_data_types = leaf_data.keys()
     csv_path = os.path.join(exp_dir, "leaf_data.csv")
