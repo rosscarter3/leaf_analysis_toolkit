@@ -36,7 +36,7 @@ def do_kde(size, voxel, data_dict):
         values = np.vstack([x_centroid, y_centroid])
 
     grid_x_points, grid_y_points = np.mgrid[0:size_x * voxel_x:np.complex(0, size_x),
-                                            0:size_y * voxel_y:np.complex(0, size_y)]
+                                   0:size_y * voxel_y:np.complex(0, size_y)]
     # grid_x_points, grid_y_points = np.mgrid[0:size_x * voxel_x:500j,
     #                                         0:size_y * voxel_y:500j]
 
@@ -70,13 +70,35 @@ def main():
 
     tip, base = read_tip(tip_path)
 
-    theta = np.arctan((base[1]-tip[1])/(base[0]-tip[0]))
+    theta = np.arctan((base[1] - tip[1]) / (base[0] - tip[0]))
 
     vxrot = voxel[1] * np.cos(theta) - voxel[0] * np.sin(theta)
     vyrot = voxel[1] * np.sin(theta) + voxel[0] * np.cos(theta)
 
-    print "vx_rot: ", vxrot
-    print "vy_rot: ", vyrot
+    (t_x, t_y) = (float(tip[1]), float(size[0] - tip[0]))
+    (b_x, b_y) = (float(base[1]), float(size[0] - base[0]))
+
+    # equation of line though tip and base
+    m_mv = (t_y - b_y) / (t_x - b_x)
+    c_mv = t_y - m_mv * t_x
+
+    # equation of line though tip, perpendicular to tip-base line
+    m_tip = -1 / m_mv
+    c_tip = t_y - m_tip * t_x
+
+    a = m_tip
+    b = -1
+    c = c_tip
+
+    (b_x_r, b_y_r) = (float(b_x) * voxel[1], float(b_y) * voxel[0])
+    (t_x_r, t_y_r) = (float(t_x) * voxel[1], float(t_y) * voxel[0])
+
+    m_mv_r = float(t_y_r - b_y_r) / float(t_x_r - b_x_r)
+    m_tip_r = -1 / m_mv_r
+    c_tip_r = t_y_r - m_tip_r * t_x_r
+    a_r = m_tip_r
+    b_r = -1
+    c_r = c_tip_r
 
     # calculate cell level data
 
@@ -90,17 +112,21 @@ def main():
         centroid_x_pixels = cell['centroid'][1]
         centroid_y_pixels = cell['centroid'][0]
 
-        centroid_x_real = centroid_x_pixels * voxel[0]
-        centroid_y_real = centroid_y_pixels * voxel[1]
+        (x_c, y_c) = (centroid_x_pixels, size[0] - centroid_y_pixels)
+        distance_from_mv_pix = np.abs((b_y - t_y) * x_c - (b_x - t_x) * y_c + b_x * t_y - b_y * t_x) / np.sqrt(
+            (b_y - t_y) ** 2 + (b_x - t_x) ** 2)
+        distance_from_tip_pix = np.abs(a * x_c + b * y_c + c) / np.sqrt(a ** 2 + b ** 2)
+
+        (x_c_r, y_c_r) = (float(x_c) * voxel[1], float(t_y) * voxel[0])
+
+        distance_from_mv_real = np.abs((b_y_r - t_y_r) * x_c_r - (b_x_r - t_x_r) * y_c_r + b_x_r * t_y_r - b_y_r * t_x_r) / np.sqrt(
+            (b_y_r - t_y_r) ** 2 + (b_x_r - t_x_r) ** 2)
+        distance_from_tip_real = np.abs(a_r * x_c_r + b_r * y_c_r + c_r) / np.sqrt(a_r ** 2 + b_r ** 2)
+
+        centroid_x_real = centroid_x_pixels * voxel[1]
+        centroid_y_real = centroid_y_pixels * voxel[0]
 
         perimeter = cell['perimeter'] * voxel[0]
-
-        xtr_pix = centroid_x_pixels - tip[1]
-        ytr_pix = centroid_y_pixels - tip[0]
-        xrot_pix = xtr_pix * np.cos(theta) - ytr_pix * np.sin(theta)
-        yrot_pix = xtr_pix * np.sin(theta) + ytr_pix * np.cos(theta)
-        xrot_re = xrot_pix * vxrot
-        yrot_re = yrot_pix * vyrot
 
         circularity = (4 * np.pi * area_real) / perimeter ** 2
 
@@ -110,10 +136,10 @@ def main():
                      'Centroid-x_um': float(centroid_x_real),
                      'Centroid-y_um': float(centroid_y_real),
                      'Perimeter_um': float(perimeter),
-                     'Distance-from-mv_pixels': np.abs(xrot_pix),
-                     'Distance-from-tip_pixels': np.abs(yrot_pix),
-                     'Distance-from-mv_um': np.abs(float(xrot_re)),
-                     'Distance-from-tip_um': np.abs(float(yrot_re)),
+                     'Distance-from-mv_pixels': np.abs(distance_from_mv_pix),
+                     'Distance-from-tip_pixels': np.abs(distance_from_tip_pix),
+                     'Distance-from-mv_um': np.abs(distance_from_mv_real),
+                     'Distance-from-tip_um': np.abs(distance_from_tip_real),
                      'Circularity_none': circularity}
 
         # TODO ADD MORE STUFF HERE IF NEEDED
@@ -171,6 +197,7 @@ def main():
         for data_type in leaf_data_csv_data_types:
             data_list.append(leaf_data[data_type])
         csvwriter.writerow(data_list)
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
