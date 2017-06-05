@@ -65,7 +65,12 @@ def main():
     lif_dir = os.path.dirname(lif_path)
     
     metadata_process = ["showinf", "-nopix", "-omexml-only", lif_path]
-    xml_string = subprocess.check_output(metadata_process)
+    try:
+        xml_string = subprocess.check_output(metadata_process)
+    except OSError:
+        print "Please install bioformats command line tools"
+        return
+
     xml_string.decode('utf8', errors='ignore')
 
     if args.im_list is not None:
