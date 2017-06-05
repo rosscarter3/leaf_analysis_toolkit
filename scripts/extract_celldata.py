@@ -70,11 +70,6 @@ def main():
 
     tip, base = read_tip(tip_path)
 
-    theta = np.arctan((base[1] - tip[1]) / (base[0] - tip[0]))
-
-    vxrot = voxel[1] * np.cos(theta) - voxel[0] * np.sin(theta)
-    vyrot = voxel[1] * np.sin(theta) + voxel[0] * np.cos(theta)
-
     (t_x, t_y) = (float(tip[1]), float(size[0] - tip[0]))
     (b_x, b_y) = (float(base[1]), float(size[0] - base[0]))
 
@@ -90,11 +85,13 @@ def main():
     b = -1
     c = c_tip
 
+    # as above but in real units
     (b_x_r, b_y_r) = (float(b_x) * voxel[1], float(b_y) * voxel[0])
     (t_x_r, t_y_r) = (float(t_x) * voxel[1], float(t_y) * voxel[0])
 
     m_mv_r = float(t_y_r - b_y_r) / float(t_x_r - b_x_r)
     m_tip_r = -1 / m_mv_r
+
     c_tip_r = t_y_r - m_tip_r * t_x_r
     a_r = m_tip_r
     b_r = -1
@@ -118,9 +115,8 @@ def main():
         distance_from_tip_pix = np.abs(a * x_c + b * y_c + c) / np.sqrt(a ** 2 + b ** 2)
 
         (x_c_r, y_c_r) = (float(x_c) * voxel[1], float(t_y) * voxel[0])
-
-        distance_from_mv_real = np.abs((b_y_r - t_y_r) * x_c_r - (b_x_r - t_x_r) * y_c_r + b_x_r * t_y_r - b_y_r * t_x_r) / np.sqrt(
-            (b_y_r - t_y_r) ** 2 + (b_x_r - t_x_r) ** 2)
+        distance_from_mv_real = np.abs((b_y_r - t_y_r) * x_c_r - (b_x_r - t_x_r) * y_c_r + b_x_r * t_y_r -
+                                       b_y_r * t_x_r) / np.sqrt((b_y_r - t_y_r) ** 2 + (b_x_r - t_x_r) ** 2)
         distance_from_tip_real = np.abs(a_r * x_c_r + b_r * y_c_r + c_r) / np.sqrt(a_r ** 2 + b_r ** 2)
 
         centroid_x_real = centroid_x_pixels * voxel[1]
