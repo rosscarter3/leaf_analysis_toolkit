@@ -11,7 +11,9 @@ The image conversion requires the bio-formats command line tools available at:
 
 http://downloads.openmicroscopy.org/bio-formats/5.5.1/
 
-
+A lot of the python scripts require up-to-date python packages
+TODO make a list of requirements!!
+`pip install < py_requirements.txt`
 
 ## Preparing the .lif files for segmentation
 To use the segmentation software, the images first need to be converted from .lif to .png format and then the stacks need to be flattened, reducing the 3d stack to a 2d projection.

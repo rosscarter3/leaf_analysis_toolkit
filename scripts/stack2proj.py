@@ -62,7 +62,6 @@ def main():
 
     max_proj = np.amax(greyscale_image_stack, axis=2)
 
-
     mpfilename = os.path.join(output_dir, "%s_max-proj.png" % outname)
     scipy.misc.imsave(mpfilename, max_proj)
 
