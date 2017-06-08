@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-"""extracts quantitative values from segmented images and writes to .csv file"""
+"""extracts quantitative values and performs a kernel density estimation from segmented images and writes to .csv file"""
 
 import os
 import csv
