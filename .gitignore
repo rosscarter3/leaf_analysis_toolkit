@@ -93,3 +93,4 @@ ENV/
 .ropeproject
 data/example_data/
 
+.idea/
