@@ -1,5 +1,6 @@
 #!/usr/bin/env python
-"""extracts quantitative values and performs a kernel density estimation from segmented images and writes to .csv file"""
+"""extracts quantitative values and performs a kernel density
+estimation from segmented images and writes to .csv file"""
 
 import os
 import csv
@@ -30,13 +31,14 @@ def do_kde(size, voxel, data_dict):
 
     x_centroid = []
     y_centroid = []
+    values = None
     for cid, data, in data_dict.iteritems():
         x_centroid.append(data['Centroid-x_um'])
         y_centroid.append(data['Centroid-y_um'])
         values = np.vstack([x_centroid, y_centroid])
 
     grid_x_points, grid_y_points = np.mgrid[0:size_x * voxel_x:np.complex(0, size_x),
-                                   0:size_y * voxel_y:np.complex(0, size_y)]
+                                            0:size_y * voxel_y:np.complex(0, size_y)]
     # grid_x_points, grid_y_points = np.mgrid[0:size_x * voxel_x:500j,
     #                                         0:size_y * voxel_y:500j]
 
@@ -100,6 +102,7 @@ def main():
     # calculate cell level data
 
     cell_data_dict = {}
+    cell_info = {}
 
     cell_props = skim.regionprops(id_array)
 

@@ -180,3 +180,26 @@ def projection_from_surface_normal_z(ma, surface, dm=0, dp=10,
                                                           [(p_start[2] * (1 - t) + p_end[2] * t) for t in tt]),
                                                          order=1))
     return res
+
+
+def normal_angle_from_surface(ma, surface):
+    imax, jmax, kmax = ma.shape
+    res = np.zeros([imax, jmax], dtype=np.float32)
+    surface_di = scipy.ndimage.gaussian_filter1d(surface, 0.5, axis=0, order=1)
+    surface_dj = scipy.ndimage.gaussian_filter1d(surface, 0.5, axis=1, order=1)
+
+    for i in range(0, imax):
+        for j in range(0, jmax):
+            si = -surface_di[i, j]
+            sj = -surface_dj[i, j]
+            k = surface[i, j]
+            sk = 1.0
+            h = sqrt(si * si + sj * sj + sk * sk)
+            si /= h
+            sj /= h
+            sk /= h
+
+            angle = np.arccos(sk/h)
+            # print angle/(2*np.pi) * 360
+            res[i, j] = angle/(2*np.pi) * 360
+    return res
