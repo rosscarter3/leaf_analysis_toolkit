@@ -63,7 +63,7 @@ def main():
 
     tip_path = os.path.join(exp_dir, "tip.txt")
     if not os.path.exists(tip_path):
-        print "\"tips.txt\" not found\n"
+        print "\"tip.txt\" not found\n"
         return
 
     print "extracting data from: ", os.path.basename(seg_path)
