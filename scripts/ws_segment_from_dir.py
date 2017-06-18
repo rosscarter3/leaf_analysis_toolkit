@@ -31,7 +31,8 @@ def get_seeds_path(exp_dir):
 
 def watershed(im_path, seeds_path):
     im = nd.imread(im_path)
-    im = np.mean(im, axis=2)
+    if len(im.shape) == 3:
+		im = np.mean(im, axis=2)
     seeds = nd.imread(seeds_path)
     
     seed_array = seeds
