@@ -5,7 +5,8 @@ import numpy as np
 import skimage.morphology
 import scipy.ndimage as nd
 import matplotlib.pyplot as plt
-
+from PIL import Image, ImageFile
+ImageFile.LOAD_TRUNCATED_IMAGES = True
 import common_functions as cf
 
 
@@ -30,7 +31,8 @@ def get_seeds_path(exp_dir):
 
 
 def watershed(im_path, seeds_path):
-    im = nd.imread(im_path)
+    im = Image.open(im_path)
+    im = np.array(im)
     if len(im.shape) == 3:
 		im = np.mean(im, axis=2)
     seeds = nd.imread(seeds_path)
