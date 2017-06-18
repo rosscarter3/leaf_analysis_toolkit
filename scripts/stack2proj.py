@@ -85,6 +85,13 @@ def main():
     scipy.misc.imsave(filename, res_rev)
     print("Done")
 
+    # flush_message("Calculating angle...")
+    # norm_angle = proj.normal_angle_from_surface(greyscale_image_stack, sps)
+    # norm_angle = float(255) * (norm_angle/float(90))
+    # filename = os.path.join(output_dir, "%s_angle.png" % outname)
+    # scipy.misc.imsave(filename, norm_angle)
+    # print("Done")
+
     flush_message("Post processing...")
     post_processed_image = projpp.proj_filter(res, 3, 60, 15)
     filename = os.path.join(output_dir, '%s_proj-pp-g3d.png' % outname)

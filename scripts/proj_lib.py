@@ -17,14 +17,11 @@ def max_indices_z(A, clip_bottom=True):
     """
     From a 3D matrix representing an image stack,
     find the depth of the voxel with maximum intensity in the z-direction.
-
     Args:
         A (numpy.ndarray): 3D volumetric image data
-
         clip_bottom (Optional[bool]): For columns which have uniform signal,
                                       whether to return the index of the top or
                                       bottom (default) of the image stack
-
     Returns:
         numpy.ndarray[int]: 2D array containing the depth of the projection surface
     """
@@ -40,15 +37,12 @@ def threshold_indices_z(A, b, c, clip_bottom=True):
     From a 3D matrix representing an image stack,
     find the depth of the first voxel which exceeds a threshold intensity
     (depending on the mean intensity of the pixels in this "pillar")
-
     Args:
         A (numpy.ndarray): 3D volumetric image data
         b, c (float): Threshold is taken to be b*mean of the pillar + c
-
         clip_bottom (Optional[bool]): For columns which have uniform signal,
                                       whether to return the index of the top or
                                       bottom (default) of the image stack
-
     Returns:
         numpy.ndarray[int]: 2D array containing the depth of the projection surface
     """
@@ -66,7 +60,6 @@ def sheet_indices_z(A, niter=1000, dt=0.05, a=3.0, b=3.0):
     this downwards speed is reduced in the presence of signal. A smoothing
     term is also applied to the surface, which encourages nearby points
     to be at similar depths.
-
     Args:
         A (numpy.ndarray): 3D volumetric image data
         niter (int): Number of timesteps for the evolution of the
@@ -80,7 +73,6 @@ def sheet_indices_z(A, niter=1000, dt=0.05, a=3.0, b=3.0):
                    downwards movement of the projection surface; larger values
                    result in the image intensity slowing the projection
                    surface more.
-
     Returns:
         numpy.ndarray[float]: 2D array containing the depth of the projection surface
     """
@@ -102,7 +94,6 @@ def projection_from_surface_z(ma, surface, dm=0, dp=10, op=np.max):
     Project the 3D image stack onto a surface (orthogonally, in the
     z-direction. This involves applying an operator (maximum, or mean)
     to the pixels in a band (in the z-direction) about the projection surface.
-
     Args:
         ma: 3D image stack.
         surface: 2D indices of the projection surface.
@@ -111,7 +102,6 @@ def projection_from_surface_z(ma, surface, dm=0, dp=10, op=np.max):
         op: Operator used to calculate the intensity of the projected
             image im[i,j] from the band of pixels
             ma[i, j, surface-dm:surface+dp]
-
     Returns:
         numpy.ndarray: Projected image
     """
@@ -134,7 +124,6 @@ def projection_from_surface_normal_z(ma, surface, dm=0, dp=10,
     along this ray (from a slightly blurred version of the 3D stack), and
     an operator (default maximum) applied to these samples to give the
     intensity of the 2D image.
-
     Args:
         ma: 3D image stack.
         surface: depth of the projection surface (2D array)
@@ -145,7 +134,6 @@ def projection_from_surface_normal_z(ma, surface, dm=0, dp=10,
             ma[i, j, surface-dm:surface+dp]
         gradient_radius: Radius of the gaussian operator used to find the slope
                          of the projection surface.
-
     Returns:
         numpy.ndarray: Projected image
     """
@@ -179,4 +167,27 @@ def projection_from_surface_normal_z(ma, surface, dm=0, dp=10,
                                                           [(p_start[1] * (1 - t) + p_end[1] * t) for t in tt],
                                                           [(p_start[2] * (1 - t) + p_end[2] * t) for t in tt]),
                                                          order=1))
+    return res
+
+
+def normal_angle_from_surface(ma, surface):
+    imax, jmax, kmax = ma.shape
+    res = np.zeros([imax, jmax], dtype=np.float32)
+    surface_di = scipy.ndimage.gaussian_filter1d(surface, 0.5, axis=0, order=1)
+    surface_dj = scipy.ndimage.gaussian_filter1d(surface, 0.5, axis=1, order=1)
+
+    for i in range(0, imax):
+        for j in range(0, jmax):
+            si = -surface_di[i, j]
+            sj = -surface_dj[i, j]
+            k = surface[i, j]
+            sk = 1.0
+            h = sqrt(si * si + sj * sj + sk * sk)
+            si /= h
+            sj /= h
+            sk /= h
+
+            angle = np.arccos(sk/h)
+            # print angle/(2*np.pi) * 360
+            res[i, j] = angle/(2*np.pi) * 360
     return res

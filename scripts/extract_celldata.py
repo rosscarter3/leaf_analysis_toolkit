@@ -1,5 +1,6 @@
 #!/usr/bin/env python
-"""extracts quantitative values from segmented images and writes to .csv file"""
+"""extracts quantitative values and performs a kernel density
+estimation from segmented images and writes to .csv file"""
 
 import os
 import csv
@@ -30,13 +31,14 @@ def do_kde(size, voxel, data_dict):
 
     x_centroid = []
     y_centroid = []
+    values = None
     for cid, data, in data_dict.iteritems():
         x_centroid.append(data['Centroid-x_um'])
         y_centroid.append(data['Centroid-y_um'])
         values = np.vstack([x_centroid, y_centroid])
 
     grid_x_points, grid_y_points = np.mgrid[0:size_x * voxel_x:np.complex(0, size_x),
-                                   0:size_y * voxel_y:np.complex(0, size_y)]
+                                            0:size_y * voxel_y:np.complex(0, size_y)]
     # grid_x_points, grid_y_points = np.mgrid[0:size_x * voxel_x:500j,
     #                                         0:size_y * voxel_y:500j]
 
@@ -47,6 +49,28 @@ def do_kde(size, voxel, data_dict):
     flipped_density = np.rot90(density, 3)
     relative_density = flipped_density / np.max(flipped_density)
     return np.fliplr(relative_density)
+
+
+def return_coefficient(t_x, t_y, b_x, b_y):
+    # equation of line though tip and base
+    m_mv = (t_y - b_y) / (t_x - b_x)
+    c_mv = t_y - m_mv * t_x
+
+    # equation of line though tip, perpendicular to tip-base line
+    m_tip = -1 / m_mv
+    c_tip = t_y - m_tip * t_x
+
+    a = m_tip
+    b = -1
+    c = c_tip
+    return a, b, c
+
+
+def return_distances(a, b, c, t_x, t_y, b_x, b_y, x_c, y_c):
+    distance_mv_pix = np.abs((b_y - t_y) * x_c - (b_x - t_x) * y_c + b_x * t_y - b_y * t_x) / np.sqrt(
+        (b_y - t_y) ** 2 + (b_x - t_x) ** 2)
+    distance_tip_pix = np.abs(a * x_c + b * y_c + c) / np.sqrt(a ** 2 + b ** 2)
+    return distance_mv_pix, distance_tip_pix
 
 
 def main():
@@ -73,33 +97,17 @@ def main():
     (t_x, t_y) = (float(tip[1]), float(size[0] - tip[0]))
     (b_x, b_y) = (float(base[1]), float(size[0] - base[0]))
 
-    # equation of line though tip and base
-    m_mv = (t_y - b_y) / (t_x - b_x)
-    c_mv = t_y - m_mv * t_x
+    (a, b, c) = return_coefficient(t_x, t_y, b_x, b_y)
 
-    # equation of line though tip, perpendicular to tip-base line
-    m_tip = -1 / m_mv
-    c_tip = t_y - m_tip * t_x
-
-    a = m_tip
-    b = -1
-    c = c_tip
-
-    # as above but in real units
-    (b_x_r, b_y_r) = (float(b_x) * voxel[1], float(b_y) * voxel[0])
     (t_x_r, t_y_r) = (float(t_x) * voxel[1], float(t_y) * voxel[0])
+    (b_x_r, b_y_r) = (float(b_x) * voxel[1], float(b_y) * voxel[0])
 
-    m_mv_r = float(t_y_r - b_y_r) / float(t_x_r - b_x_r)
-    m_tip_r = -1 / m_mv_r
-
-    c_tip_r = t_y_r - m_tip_r * t_x_r
-    a_r = m_tip_r
-    b_r = -1
-    c_r = c_tip_r
+    a_r, b_r, c_r = return_coefficient(t_x_r, t_y_r, b_x_r, b_y_r)
 
     # calculate cell level data
 
     cell_data_dict = {}
+    cell_info = {}
 
     cell_props = skim.regionprops(id_array)
 
@@ -110,14 +118,10 @@ def main():
         centroid_y_pixels = cell['centroid'][0]
 
         (x_c, y_c) = (centroid_x_pixels, size[0] - centroid_y_pixels)
-        distance_from_mv_pix = np.abs((b_y - t_y) * x_c - (b_x - t_x) * y_c + b_x * t_y - b_y * t_x) / np.sqrt(
-            (b_y - t_y) ** 2 + (b_x - t_x) ** 2)
-        distance_from_tip_pix = np.abs(a * x_c + b * y_c + c) / np.sqrt(a ** 2 + b ** 2)
+        distance_mv_pix, distance_tip_pix = return_distances(a, b, c, t_x, t_y, b_x, b_y, x_c, y_c)
 
-        (x_c_r, y_c_r) = (float(x_c) * voxel[1], float(t_y) * voxel[0])
-        distance_from_mv_real = np.abs((b_y_r - t_y_r) * x_c_r - (b_x_r - t_x_r) * y_c_r + b_x_r * t_y_r -
-                                       b_y_r * t_x_r) / np.sqrt((b_y_r - t_y_r) ** 2 + (b_x_r - t_x_r) ** 2)
-        distance_from_tip_real = np.abs(a_r * x_c_r + b_r * y_c_r + c_r) / np.sqrt(a_r ** 2 + b_r ** 2)
+        (x_c_r, y_c_r) = (centroid_x_pixels * voxel[1], (size[0] - centroid_y_pixels) * voxel[0])
+        distance_mv_real, distance_tip_real = return_distances(a_r, b_r, c_r, t_x_r, t_y_r, b_x_r, b_y_r, x_c_r, y_c_r)
 
         centroid_x_real = centroid_x_pixels * voxel[1]
         centroid_y_real = centroid_y_pixels * voxel[0]
@@ -132,10 +136,10 @@ def main():
                      'Centroid-x_um': float(centroid_x_real),
                      'Centroid-y_um': float(centroid_y_real),
                      'Perimeter_um': float(perimeter),
-                     'Distance-from-mv_pixels': np.abs(distance_from_mv_pix),
-                     'Distance-from-tip_pixels': np.abs(distance_from_tip_pix),
-                     'Distance-from-mv_um': np.abs(distance_from_mv_real),
-                     'Distance-from-tip_um': np.abs(distance_from_tip_real),
+                     'Distance-from-mv_pixels': np.abs(distance_mv_pix),
+                     'Distance-from-tip_pixels': np.abs(distance_tip_pix),
+                     'Distance-from-mv_um': np.abs(distance_mv_real),
+                     'Distance-from-tip_um': np.abs(distance_tip_real),
                      'Circularity_none': circularity}
 
         # TODO ADD MORE STUFF HERE IF NEEDED
@@ -177,7 +181,7 @@ def main():
     dir_list = args.exp_dir.split('/')[-2].split('_')
 
     leaf_data["timepoint"] = dir_list[1]
-    leaf_data["genotype"] = dir_list[3].split('.')[0]
+    leaf_data["genotype"] = dir_list
     leaf_data["no-of-cells"] = len(cell_data_dict)
     area = 0
     for data_dict in cell_data_dict.itervalues():

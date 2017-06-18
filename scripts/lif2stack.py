@@ -43,14 +43,14 @@ def write_dims(sizes, resolutions, output_dir):
                                                  resolutions[2]))
 
 
-def detect_num_images(lif_path):
+def detect_num_images(lif_path, bf_path):
     """
     returns the number of image stacks contained within a .lif file
     :param lif_path: path to the lif file of interest
     :return: num_ims: number of stacks contained in the provided lif file
     """
 
-    info_process = ["showinf", "-nopix", lif_path]
+    info_process = [os.path.join(bf_path,"showinf"), "-nopix", lif_path]
     info_string = subprocess.check_output(info_process)
     num_ims = 0
     for l in info_string.split("\n"):
@@ -64,12 +64,16 @@ def main():
     lif_name = os.path.basename(lif_path)
     lif_dir = os.path.dirname(lif_path)
     
-    metadata_process = ["showinf", "-nopix", "-omexml-only", lif_path]
+    bf_location = ""
+
     try:
-        xml_string = subprocess.check_output(metadata_process)
-    except OSError:
-        print "Please install bioformats command line tools"
-        return
+        metadata_process = [os.path.join(bf_location,'showinf'), '-nopix', '-omexml-only',os.path.abspath(lif_path)]
+	xml_string = subprocess.check_output(metadata_process)
+    except OSError as e:
+	# hack for ross' ubuntu machine
+        bf_location = "/home/ross/home3/tools/bftools"
+        metadata_process = [os.path.join(bf_location,'showinf'), '-nopix', '-omexml-only',os.path.abspath(lif_path)]
+	xml_string = subprocess.check_output(metadata_process)   
 
     xml_string.decode('utf8', errors='ignore')
 
@@ -77,7 +81,7 @@ def main():
         im_list = ast.literal_eval(args.im_list)
         print "extracting ", im_list
     else:
-        num_ims = detect_num_images(lif_path)
+        num_ims = detect_num_images(lif_path, bf_location)
         im_list = range(num_ims)
         print "extracting all"
     
@@ -94,8 +98,7 @@ def main():
         if not os.path.exists(stack_output_dir):
             os.makedirs(stack_output_dir)
 
-        bfconvert_process = ["bfconvert", "-series", str(im_number), lif_path,
-                             os.path.join(stack_output_dir, "stack%z.tiff")]
+        bfconvert_process = [os.path.join(bf_location,"bfconvert"), "-series", str(im_number), lif_path, os.path.join(stack_output_dir, "stack%z.tiff")]
         subprocess.call(bfconvert_process)
 
         write_dims(size, resolution, output_dir)

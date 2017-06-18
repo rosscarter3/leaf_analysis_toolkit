@@ -6,6 +6,7 @@ import json
 import argparse
 
 import matplotlib
+import matplotlib.colors as colors
 import matplotlib.pyplot as plt
 # from mpl_toolkits.axes_grid1 import make_axes_locatable
 # import numpy as np
@@ -79,7 +80,12 @@ def main():
             data_list.append(cell_data[data_type])
         print "Painting", data_type, ": ", min(data_list), max(data_list)
 
-        color_map = matplotlib.cm.ScalarMappable(cmap=color_scheme)
+        if "area" in data_type:
+            norm = colors.LogNorm(vmin=min(data_list), vmax=max(data_list))
+            color_map = matplotlib.cm.ScalarMappable(cmap=color_scheme, norm=norm)
+        else:
+            color_map = matplotlib.cm.ScalarMappable(cmap=color_scheme)
+
         color_map.set_clim(vmin=min(data_list), vmax=max(data_list))
 
         heatmap = np.full(shape=heatmap_shape, fill_value=[0, 0, 0, 255], dtype='float32')
