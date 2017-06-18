@@ -29,8 +29,14 @@ def get_latest_seg_paths(exp_dir):
     fwd_dirs.sort()
     rev_dirs.sort()
 
-    fwd_image_path = os.path.join(fwd_dirs[-1], "CellstateFinal", "00000.png")
-    rev_image_path = os.path.join(rev_dirs[-1], "CellstateFinal", "00000.png")
+    try:
+        fwd_image_path = os.path.join(fwd_dirs[-1], "CellstateFinal", "00000.png")
+    except:
+        fwd_image_path = None
+    try:    
+        rev_image_path = os.path.join(rev_dirs[-1], "CellstateFinal", "00000.png")
+    except:
+        rev_image_path = None
 
     return fwd_image_path, rev_image_path
 
@@ -64,8 +70,10 @@ def main():
     fwd_dest_path = os.path.join(exp_dir, "fwd_seg.png")
     rev_dest_path = os.path.join(exp_dir, "rev_seg.png")
 
-    shutil.copy(fwd_path, fwd_dest_path)
-    shutil.copy(rev_path, rev_dest_path)
+    if fwd_path is not None:
+        shutil.copy(fwd_path, fwd_dest_path)
+    if rev_path is not None:    
+        shutil.copy(rev_path, rev_dest_path)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="submits the two gauss projected images for segmentation \
