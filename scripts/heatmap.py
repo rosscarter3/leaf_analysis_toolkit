@@ -21,7 +21,6 @@ def load_json_data(json_path):
 
 
 def main():
-    print "script opened"
     exp_dir = args.exp_dir
     seg_path = cf.get_seg_path(exp_dir)
     if not os.path.exists(seg_path):
@@ -119,7 +118,6 @@ def main():
 
 
 if __name__ == '__main__':
-    print "Script opened"
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("exp_dir", help="Experiment Directory")
     args = parser.parse_args()
