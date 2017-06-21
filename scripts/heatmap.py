@@ -8,8 +8,8 @@ import argparse
 import matplotlib
 import matplotlib.colors as colors
 import matplotlib.pyplot as plt
-# from mpl_toolkits.axes_grid1 import make_axes_locatable
-# import numpy as np
+from mpl_toolkits.axes_grid1 import make_axes_locatable
+import numpy as np
 
 
 import common_functions as cf
@@ -49,6 +49,8 @@ def main():
 
     color_scheme = 'viridis'
     heatmap_shape = [id_array.shape[0], id_array.shape[1], 4]
+    # TODO check extent
+
     extent = [0, heatmap_shape[1] * vox[1], 0, heatmap_shape[0] * vox[0]]
 
     xs, ys = [], []
