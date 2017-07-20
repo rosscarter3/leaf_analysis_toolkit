@@ -142,7 +142,7 @@ def main():
                      'Distance-from-tip_um': np.abs(distance_tip_real),
                      'Circularity_none': circularity}
 
-        # TODO ADD MORE STUFF HERE IF NEEDED
+        # ADD MORE STUFF HERE IF NEEDED
         # Name of the dictionary key of the form: "Name_Units"
 
         cell_data_dict[cell_id] = cell_info
