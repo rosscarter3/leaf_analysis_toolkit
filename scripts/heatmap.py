@@ -63,19 +63,19 @@ def main():
     xlims = (min(xs) - border, max(xs) + border)
     ylims = ((im_height - max(ys)) - border, (im_height - min(ys)) + border)
 
+    def units_string(data_type):
+        units = data_type.split("_")[1]
+        if units == "um":
+            return r'$\mu$m'
+        if units == "um2":
+            return r'$\mu$m$^{2}$'
+        if units == "pixels":
+            return "Pixels"
+        else:
+            return ""
+
     def do_heatmap(data_type):
         data_list = []
-
-        def units_string(data_type):
-            units = data_type.split("_")[1]
-            if units == "um":
-                return r'$\mu$m'
-            if units == "um2":
-                return r'$\mu$m$^{2}$'
-            if units == "pixels":
-                return "Pixels"
-            else:
-                return ""
 
         for cell_data in data_dict.itervalues():
             data_list.append(cell_data[data_type])
@@ -113,8 +113,27 @@ def main():
 
         plt.savefig(os.path.join(exp_dir, "heatmaps", data_type + ".png"), format='png', dpi=1000)
 
+    def do_cell_outlines():
+
+        print "Painting Cell Outlines"
+
+        plt.figure(figsize=(10, 10))
+        ax1 = plt.subplot(111)
+        plt.title("Outline")
+        plt.imshow(outline_array, cmap=color_scheme, interpolation='nearest', extent=extent)
+        cf.add_scale_bar(ax1)
+        ax1.axis('on')
+        ax1.get_xaxis().set_ticks([])
+        ax1.get_yaxis().set_ticks([])
+        plt.xlim(xlims)
+        plt.ylim(ylims)
+
+        plt.savefig(os.path.join(exp_dir, "heatmaps", "oultine" + ".png"), format='png', dpi=1000)
+
     for data_type in data_to_plot:
         do_heatmap(data_type)
+
+    do_cell_outlines()
 
 
 if __name__ == '__main__':
