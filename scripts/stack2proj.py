@@ -92,12 +92,12 @@ def main():
     # scipy.misc.imsave(filename, norm_angle)
     # print("Done")
 
-    flush_message("Post processing...")
-    post_processed_image = projpp.proj_filter(res, 3, 60, 15)
-    filename = os.path.join(output_dir, '%s_proj-pp-g3d.png' % outname)
-    # pp_scale = 255 / np.amax(post_processed_image)
-    scipy.misc.imsave(filename, post_processed_image)
-    print("Done")
+    # flush_message("Post processing...")
+    # post_processed_image = projpp.proj_filter(res, 3, 60, 15)
+    # filename = os.path.join(output_dir, '%s_proj-pp-g3d.png' % outname)
+    # # pp_scale = 255 / np.amax(post_processed_image)
+    # scipy.misc.imsave(filename, post_processed_image)
+    # print("Done")
 
     flush_message("Equalizing... ")
     filename = os.path.join(output_dir, "%s_proj-pp-clahe-g3d.png" % outname)
