@@ -92,7 +92,18 @@ def main():
         heatmap = np.full(shape=heatmap_shape, fill_value=[0, 0, 0, 255], dtype='float32')
 
         for cell_id, cell_data in data_dict.iteritems():
-            heatmap[id_array == int(cell_id)] = color_map.to_rgba(cell_data[data_type])
+            # print cell_id, cell_data
+            if 'Density' in data_type and float(cell_data[data_type]) < 0.8:
+                # print cell_data[data_type]
+                color = color_map.to_rgba(cell_data[data_type])
+                col_list = list(color)
+                col_list[3] = 0.5
+                # print color
+                heatmap[id_array == int(cell_id)] = col_list
+                # print "="*10
+            else:
+                color = color_map.to_rgba(cell_data[data_type])
+                heatmap[id_array == int(cell_id)] = color
 
         plt.figure(figsize=(10, 10))
         ax1 = plt.subplot(111)
@@ -110,8 +121,8 @@ def main():
         cax1 = divider1.append_axes("right", size="5%", pad=0.05)
         cbar = plt.colorbar(cax=cax1)
         cbar.set_label(units_string(data_type))
-
-        plt.savefig(os.path.join(exp_dir, "heatmaps", data_type + ".png"), format='png', dpi=1000)
+        plt.show()
+        # plt.savefig(os.path.join(exp_dir, "heatmaps", data_type + ".png"), format='png', dpi=1000)
 
     def do_cell_outlines():
 
@@ -131,7 +142,8 @@ def main():
         plt.savefig(os.path.join(exp_dir, "heatmaps", "oultine" + ".png"), format='png', dpi=1000)
 
     for data_type in data_to_plot:
-        do_heatmap(data_type)
+        if 'Density' in data_type:
+            do_heatmap(data_type)
 
     do_cell_outlines()
 

@@ -28,7 +28,15 @@ def load_image_stack(path):
     if not os.path.isfile(os.path.join(path, "order.txt")):
         for tiff_file in tiff_files:
             z_id = int(re.findall('\d+', str(tiff_file))[0])
-            stack[:, :, z_id, :] = imread(os.path.join(path, tiff_file))
+            tmp_im = imread(os.path.join(path, tiff_file))
+            if len(tmp_im.shape) == 2:
+                tmp_im2 = np.zeros([tmp_im.shape[0], tmp_im.shape[1], 3], dtype=np.uint8)
+                for i in xrange(tmp_im.shape[0]):
+                    for j in xrange(tmp_im.shape[1]):
+                        tmp_im2[i, j] = [tmp_im[i][j], 0, 0]
+                stack[:, :, z_id, :] = tmp_im2
+            else:
+                stack[:, :, z_id, :] = tmp_im
     else:
         for tiff_file in tiff_files:
             z_id = int(re.findall('\d+', str(tiff_file))[0])
@@ -56,9 +64,10 @@ def main():
     stack_dir = os.path.join(exp_dir, "stack")
     output_dir = exp_dir
     outname = "_".join(os.path.basename(exp_dir).split('_')[1:-1])
-
+    print "Loading image stack..."
     image3d = load_image_stack(stack_dir)
     greyscale_image_stack = np.amax(image3d, 3)
+    print "Done"
 
     max_proj = np.amax(greyscale_image_stack, axis=2)
 
