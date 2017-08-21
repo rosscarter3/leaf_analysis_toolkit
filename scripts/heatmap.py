@@ -121,8 +121,8 @@ def main():
         cax1 = divider1.append_axes("right", size="5%", pad=0.05)
         cbar = plt.colorbar(cax=cax1)
         cbar.set_label(units_string(data_type))
-        plt.show()
-        # plt.savefig(os.path.join(exp_dir, "heatmaps", data_type + ".png"), format='png', dpi=1000)
+        # plt.show()
+        plt.savefig(os.path.join(exp_dir, "heatmaps", data_type + ".png"), format='png', dpi=1000)
 
     def do_cell_outlines():
 
@@ -142,8 +142,7 @@ def main():
         plt.savefig(os.path.join(exp_dir, "heatmaps", "oultine" + ".png"), format='png', dpi=1000)
 
     for data_type in data_to_plot:
-        if 'Density' in data_type:
-            do_heatmap(data_type)
+        do_heatmap(data_type)
 
     do_cell_outlines()
 
