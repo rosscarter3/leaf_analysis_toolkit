@@ -19,6 +19,7 @@ def get_im_paths(exp_dir):
             #     im_path.append(os.path.abspath(os.path.join(dirpath, f)))
             if f.endswith('_proj-g3d_rev.png'):
                 im_path.append(os.path.abspath(os.path.join(dirpath, f)))
+    print "got image paths!"
     return im_path
 
 
@@ -28,6 +29,7 @@ def get_seeds_path(exp_dir):
         for f in filenames:
             if "manual" in f:
                 seeds_path = os.path.abspath(os.path.join(dirpath, f))
+    print "Got seeds path!"
     return seeds_path
 
 
@@ -52,6 +54,9 @@ def watershed(im_path, seeds_path):
     seed_array_bool = skimage.morphology.remove_small_objects(seed_array_bool, 9)
 
     seg = skimage.morphology.watershed(im, seed_array_bool)
+
+    # TODO remove small cells!!
+
     seg[np.where(seg == seg[0, 0])] = 0
 
     seg_col = seg
@@ -71,6 +76,7 @@ def watershed(im_path, seeds_path):
 
 
 def main(args):
+    print "Script running!"
     exp_dir = args.dir_path
 
     im_paths = get_im_paths(exp_dir)
@@ -84,6 +90,7 @@ def main(args):
         print "Segmenting: " + os.path.basename(im_path)
         watershed(im_path, seeds_path)
 
+    print "finished"
     return 0
 
 

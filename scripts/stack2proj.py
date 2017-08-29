@@ -6,10 +6,10 @@ import argparse
 import numpy as np
 import scipy
 from scipy.ndimage import imread
-import skimage.exposure as skime
+# import skimage.exposure as skime
 
 import proj_lib as proj
-import projpp_lib as projpp
+# import projpp_lib as projpp
 
 
 def flush_message(message):
@@ -64,10 +64,10 @@ def main():
     stack_dir = os.path.join(exp_dir, "stack")
     output_dir = exp_dir
     outname = "_".join(os.path.basename(exp_dir).split('_')[1:-1])
-    print "Loading image stack..."
+    print("Loading image stack...")
     image3d = load_image_stack(stack_dir)
     greyscale_image_stack = np.amax(image3d, 3)
-    print "Done"
+    print("Done")
 
     max_proj = np.amax(greyscale_image_stack, axis=2)
 
@@ -108,12 +108,12 @@ def main():
     # scipy.misc.imsave(filename, post_processed_image)
     # print("Done")
 
-    flush_message("Equalizing... ")
-    filename = os.path.join(output_dir, "%s_proj-pp-clahe-g3d.png" % outname)
-    clahe = skime.equalize_adapthist(post_processed_image, clip_limit=0.01)
-    # clahe_scale = 255 / np.amax(clahe)
-    scipy.misc.imsave(filename, clahe)
-    print("Done")
+    # flush_message("Equalizing... ")
+    # filename = os.path.join(output_dir, "%s_proj-pp-clahe-g3d.png" % outname)
+    # clahe = skime.equalize_adapthist(post_processed_image, clip_limit=0.01)
+    # # clahe_scale = 255 / np.amax(clahe)
+    # scipy.misc.imsave(filename, clahe)
+    # print("Done")
     print("------------")
 
 if __name__ == '__main__':
