@@ -17,7 +17,7 @@ def get_im_paths(exp_dir):
         for f in filenames:
             # if f.endswith('_proj-g3d.png') or f.endswith('_proj-g3d_rev.png'):
             #     im_path.append(os.path.abspath(os.path.join(dirpath, f)))
-            if f.endswith('_proj-g3d_rev.png'):
+            if f.endswith('_proj_g3d_rev.png'):
                 im_path.append(os.path.abspath(os.path.join(dirpath, f)))
     print "got image paths!"
     return im_path
@@ -38,6 +38,8 @@ def watershed(im_path, seeds_path):
     im = np.array(im)
     if len(im.shape) == 3:
         im = np.mean(im, axis=2)
+
+    print im
 
     seeds = nd.imread(seeds_path)
 
@@ -79,8 +81,13 @@ def main(args):
     print "Script running!"
     exp_dir = args.dir_path
 
+    print "experiment directory: ", exp_dir
+
     im_paths = get_im_paths(exp_dir)
     seeds_path = get_seeds_path(exp_dir)
+
+    print "im path is: ", im_paths
+    print "seeds path is: ", seeds_path
 
     if seeds_path is None:
         print "No manual seeds image found\n"
