@@ -17,7 +17,7 @@ def get_im_paths(exp_dir):
         for f in filenames:
             # if f.endswith('_proj-g3d.png') or f.endswith('_proj-g3d_rev.png'):
             #     im_path.append(os.path.abspath(os.path.join(dirpath, f)))
-            if f.endswith('_proj_g3d_rev.png'):
+            if f.endswith('_proj-g3d_rev.png') or f.endswith('_proj_g3d_rev.png'):
                 im_path.append(os.path.abspath(os.path.join(dirpath, f)))
     print "got image paths!"
     return im_path
