@@ -11,7 +11,7 @@ def parse_xml_metadata_2(xml_string, image_id, array_order='xyz'):
     spatial_array_order = [c for c in array_order if c in 'XYZ']
     size_tags = ['Size' + c for c in array_order]
     res_tags = ['PhysicalSize' + c for c in spatial_array_order]
-    #xml_string.encode('utf8', 'ignore')
+    # xml_string.encode('utf8', 'ignore')
     metadata_root = et.ElementTree.fromstring(xml_string)
 
     for child in metadata_root:
@@ -50,7 +50,7 @@ def detect_num_images(lif_path, bf_path):
     :return: num_ims: number of stacks contained in the provided lif file
     """
 
-    info_process = [os.path.join(bf_path,"showinf"), "-nopix", lif_path]
+    info_process = [os.path.join(bf_path, "showinf"), "-nopix", lif_path]
     info_string = subprocess.check_output(info_process)
     num_ims = 0
     for l in info_string.split("\n"):
@@ -63,17 +63,17 @@ def main():
     lif_path = args.lif_path
     lif_name = os.path.basename(lif_path)
     lif_dir = os.path.dirname(lif_path)
-    
+
     bf_location = ""
 
     try:
-        metadata_process = [os.path.join(bf_location,'showinf'), '-nopix', '-omexml-only',os.path.abspath(lif_path)]
-	xml_string = subprocess.check_output(metadata_process)
+        metadata_process = [os.path.join(bf_location, 'showinf'), '-nopix', '-omexml-only', os.path.abspath(lif_path)]
+        xml_string = subprocess.check_output(metadata_process)
     except OSError as e:
-	# hack for ross' ubuntu machine
+        # hack for ross' ubuntu machine
         bf_location = "/home/ross/home3/tools/bftools"
-        metadata_process = [os.path.join(bf_location,'showinf'), '-nopix', '-omexml-only',os.path.abspath(lif_path)]
-	xml_string = subprocess.check_output(metadata_process)   
+        metadata_process = [os.path.join(bf_location, 'showinf'), '-nopix', '-omexml-only', os.path.abspath(lif_path)]
+        xml_string = subprocess.check_output(metadata_process)
 
     xml_string.decode('utf8', errors='ignore')
 
@@ -84,7 +84,7 @@ def main():
         num_ims = detect_num_images(lif_path, bf_location)
         im_list = range(num_ims)
         print "extracting all"
-    
+
     for im_number in im_list:
         name, size, resolution = parse_xml_metadata_2(xml_string, im_number)
         print "extracting", name
@@ -98,7 +98,8 @@ def main():
         if not os.path.exists(stack_output_dir):
             os.makedirs(stack_output_dir)
 
-        bfconvert_process = [os.path.join(bf_location,"bfconvert"), "-series", str(im_number), lif_path, os.path.join(stack_output_dir, "stack%z.tiff")]
+        bfconvert_process = [os.path.join(bf_location, "bfconvert"), "-series", str(im_number), lif_path,
+                             os.path.join(stack_output_dir, "stack%z.tiff")]
         subprocess.call(bfconvert_process)
 
         write_dims(size, resolution, output_dir)

@@ -58,6 +58,7 @@ def watershed(im_path, seeds_path):
     seg = skimage.morphology.watershed(im, seed_array_bool)
 
     # TODO remove small cells!!
+    # TODO remove cells with circularity <0 , >1
 
     seg[np.where(seg == seg[0, 0])] = 0
 

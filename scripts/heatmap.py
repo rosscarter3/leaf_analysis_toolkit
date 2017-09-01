@@ -93,7 +93,7 @@ def main():
 
         for cell_id, cell_data in data_dict.iteritems():
             # print cell_id, cell_data
-            if 'Density' in data_type and float(cell_data[data_type]) < 0.8:
+            if 'Density' in data_type and float(cell_data[data_type]) < 0.85:
                 # print cell_data[data_type]
                 color = color_map.to_rgba(cell_data[data_type])
                 col_list = list(color)
