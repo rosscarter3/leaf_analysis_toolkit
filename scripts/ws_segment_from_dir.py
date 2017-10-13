@@ -7,8 +7,9 @@ import scipy.ndimage as nd
 import matplotlib.pyplot as plt
 from PIL import Image, ImageFile
 
-ImageFile.LOAD_TRUNCATED_IMAGES = True
 import common_functions as cf
+
+ImageFile.LOAD_TRUNCATED_IMAGES = True
 
 
 def get_im_paths(exp_dir):
@@ -39,23 +40,29 @@ def watershed(im_path, seeds_path):
     if len(im.shape) == 3:
         im = np.mean(im, axis=2)
 
-    print im
-
     seeds = nd.imread(seeds_path)
 
-    seed_array = seeds
+    seed_array = seeds.astype(np.int64)
 
-    seed_array[:, :, 1] = 0
-    seed_array[:, :, 2] = 0
+    seed_array[:, :, 1] = 0  # green
+    seed_array[:, :, 2] = 0  # blue
 
     # TODO fix shape of seeds
 
     seed_array_bool = seed_array[:, :, 0] > 254
 
+    # plt.imshow(seed_array_bool)
+    # plt.show()
     seed_array_bool = skimage.morphology.label(seed_array_bool)
-    seed_array_bool = skimage.morphology.remove_small_objects(seed_array_bool, 9)
+    seed_array_bool = skimage.morphology.remove_small_objects(seed_array_bool, 2)
 
-    seg = skimage.morphology.watershed(im, seed_array_bool)
+    plt.subplot(1, 2, 1)
+    plt.imshow(im)
+    plt.subplot(1, 2, 2)
+    plt.imshow(seed_array_bool)
+    plt.show()
+
+    seg = skimage.morphology.watershed(im, seed_array_bool, mask=np.ones_like(im))
 
     # TODO remove small cells!!
     # TODO remove cells with circularity <0 , >1
@@ -102,8 +109,51 @@ def main(args):
     return 0
 
 
+def watershed_test():
+    import numpy as np
+    import matplotlib.pyplot as plt
+    from scipy import ndimage as ndi
+
+    from skimage.morphology import watershed
+    from skimage.feature import peak_local_max
+
+    # Generate an initial image with two overlapping circles
+    x, y = np.indices((80, 80))
+    x1, y1, x2, y2 = 28, 28, 44, 52
+    r1, r2 = 16, 20
+    mask_circle1 = (x - x1) ** 2 + (y - y1) ** 2 < r1 ** 2
+    mask_circle2 = (x - x2) ** 2 + (y - y2) ** 2 < r2 ** 2
+    image = np.logical_or(mask_circle1, mask_circle2)
+
+    # Now we want to separate the two objects in image
+    # Generate the markers as local maxima of the distance to the background
+    distance = ndi.distance_transform_edt(image)
+    local_maxi = peak_local_max(distance, indices=False, footprint=np.ones((3, 3)),
+                                labels=image)
+    markers = ndi.label(local_maxi)[0]
+    labels = watershed(-distance, markers, mask=image)
+
+    fig, axes = plt.subplots(ncols=3, figsize=(9, 3), sharex=True, sharey=True,
+                             subplot_kw={'adjustable': 'box-forced'})
+    ax = axes.ravel()
+
+    ax[0].imshow(image, cmap=plt.cm.gray, interpolation='nearest')
+    ax[0].set_title('Overlapping objects')
+    ax[1].imshow(-distance, cmap=plt.cm.gray, interpolation='nearest')
+    ax[1].set_title('Distances')
+    ax[2].imshow(labels, cmap=plt.cm.spectral, interpolation='nearest')
+    ax[2].set_title('Separated objects')
+
+    for a in ax:
+        a.set_axis_off()
+
+    fig.tight_layout()
+    plt.show()
+
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="")
     parser.add_argument("dir_path", help="")
     args = parser.parse_args()
     main(args)
+    # watershed_test()
