@@ -10,7 +10,7 @@ import matplotlib.colors as colors
 import matplotlib.pyplot as plt
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 import numpy as np
-
+import tqdm
 
 import common_functions as cf
 
@@ -91,16 +91,12 @@ def main():
 
         heatmap = np.full(shape=heatmap_shape, fill_value=[0, 0, 0, 255], dtype='float32')
 
-        for cell_id, cell_data in data_dict.iteritems():
-            # print cell_id, cell_data
-            if 'Density' in data_type and float(cell_data[data_type]) < 0.85:
-                # print cell_data[data_type]
+        for cell_id, cell_data in tqdm.tqdm(data_dict.iteritems()):
+            if 'Density' in data_type and float(cell_data[data_type]) < 0.7:
                 color = color_map.to_rgba(cell_data[data_type])
                 col_list = list(color)
                 col_list[3] = 0.5
-                # print color
                 heatmap[id_array == int(cell_id)] = col_list
-                # print "="*10
             else:
                 color = color_map.to_rgba(cell_data[data_type])
                 heatmap[id_array == int(cell_id)] = color

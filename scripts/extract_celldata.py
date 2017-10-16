@@ -10,6 +10,7 @@ import argparse
 import numpy as np
 from scipy import stats
 import skimage.measure as skim
+import tqdm.tqdm as tqdm
 
 import common_functions as cf
 
@@ -126,8 +127,8 @@ def main():
         centroid_x_real = centroid_x_pixels * voxel[1]
         centroid_y_real = centroid_y_pixels * voxel[0]
 
+        # TODO check circularity and perimeter values
         perimeter = cell['perimeter'] * voxel[0]
-
         circularity = (4 * np.pi * area_real) / perimeter ** 2
 
         cell_info = {'Area_um2': area_real,
@@ -148,7 +149,7 @@ def main():
         cell_data_dict[cell_id] = cell_info
 
     density_array = do_kde(size, voxel, cell_data_dict)
-    for cell_id in cell_data_dict.iterkeys():
+    for cell_id in tqdm(cell_data_dict.iterkeys()):
         av_density = np.mean(density_array[id_array == int(cell_id)])
         cell_data_dict[cell_id]['Relative-Cell-Density_none'] = av_density
 
