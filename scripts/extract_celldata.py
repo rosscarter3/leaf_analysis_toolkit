@@ -10,7 +10,7 @@ import argparse
 import numpy as np
 from scipy import stats
 import skimage.measure as skim
-import tqdm.tqdm as tqdm
+import tqdm
 
 import common_functions as cf
 
@@ -149,7 +149,7 @@ def main():
         cell_data_dict[cell_id] = cell_info
 
     density_array = do_kde(size, voxel, cell_data_dict)
-    for cell_id in tqdm(cell_data_dict.iterkeys()):
+    for cell_id in cell_data_dict.iterkeys():
         av_density = np.mean(density_array[id_array == int(cell_id)])
         cell_data_dict[cell_id]['Relative-Cell-Density_none'] = av_density
 

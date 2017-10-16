@@ -44,8 +44,8 @@ def watershed(im_path, seeds_path):
 
     seed_array = seeds.astype(np.int64)
 
-    seed_array[:, :, 1] = 0  # green
-    seed_array[:, :, 2] = 0  # blue
+    #seed_array[:, :, 1] = 0  # green
+    #seed_array[:, :, 2] = 0  # blue
 
     seed_array_bool = np.ones([seed_array.shape[0], seed_array.shape[1]])
 
@@ -54,17 +54,17 @@ def watershed(im_path, seeds_path):
             if seed_array[i, j, 0] == seed_array[i, j, 1] == seed_array[i, j, 2]:
                 seed_array_bool[i, j] = 0
 
-    # plt.imshow(seed_array_bool)
-    # plt.show()
+    plt.imshow(seed_array_bool)
+    plt.show()
     seed_array_bool = skimage.morphology.label(seed_array_bool)
 
     seed_array_bool = skimage.morphology.remove_small_objects(seed_array_bool, 2)
 
-    plt.subplot(1, 2, 1)
-    plt.imshow(im)
-    plt.subplot(1, 2, 2)
-    plt.imshow(seed_array_bool)
-    plt.show()
+    #plt.subplot(1, 2, 1)
+    #plt.imshow(im)
+    #plt.subplot(1, 2, 2)
+    #plt.imshow(seed_array_bool)
+    #plt.show()
 
     seg = skimage.morphology.watershed(im, seed_array_bool, mask=np.ones_like(im))
 
