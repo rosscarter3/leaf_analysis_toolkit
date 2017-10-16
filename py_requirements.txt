@@ -1,4 +1,4 @@
-javabridge==1.0.14
+#javabridge==1.0.14
 jicbioimage==0.10.1
 jicbioimage.core==0.15.0
 jicbioimage.illustrate==0.6.1
