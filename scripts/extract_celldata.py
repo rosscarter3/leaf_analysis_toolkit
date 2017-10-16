@@ -180,7 +180,7 @@ def main():
 
     dir_list = args.exp_dir.split('/')[-2].split('_')
 
-    leaf_data["timepoint"] = dir_list[1]
+    leaf_data["timepoint"] = dir_list
     leaf_data["genotype"] = dir_list
     leaf_data["no-of-cells"] = len(cell_data_dict)
     area = 0
