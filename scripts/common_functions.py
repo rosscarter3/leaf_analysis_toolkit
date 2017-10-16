@@ -58,7 +58,7 @@ def rgb2id_array(rgb_array):
 
 def id_array2rgb(id_array):
     """Return rgb array from identifier array"""
-    rgb_array = np.zeros((id_array.shape[0], id_array.shape[1], 3), dtype=np.uint32)
+    rgb_array = np.zeros((id_array.shape[0], id_array.shape[1], 3), dtype=np.uint8)
 
     for row in range(id_array.shape[0]):
         for column in range(id_array.shape[1]):
