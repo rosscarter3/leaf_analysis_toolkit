@@ -113,6 +113,8 @@ def main():
     cell_props = skim.regionprops(id_array)
 
     for cell in cell_props:
+        # check for circulrity greater than 1
+
         cell_id = cell['label']
         area_real = cell['area'] * voxel[0] * voxel[1]
         centroid_x_pixels = cell['centroid'][1]
@@ -127,21 +129,30 @@ def main():
         centroid_x_real = centroid_x_pixels * voxel[1]
         centroid_y_real = centroid_y_pixels * voxel[0]
 
-        # TODO check circularity and perimeter values
         perimeter = cell['perimeter'] * voxel[0]
-        circularity = (4 * np.pi * area_real) / perimeter ** 2
+        eccentricity = cell['eccentricity']
+        cell_length = cell['major_axis_length']
+        cell_width = cell['minor_axis_length']
+        orientation = cell['orientation']
+	circularity = (4 * np.pi * area_real) / perimeter ** 2
+        if circularity > 1:
+            continue
 
         cell_info = {'Area_um2': area_real,
-                     'Centroid-x_pixels': int(centroid_x_pixels),
-                     'Centroid-y_pixels': int(centroid_y_pixels),
+                     #'Centroid-x_pixels': int(centroid_x_pixels),
+                     #'Centroid-y_pixels': int(centroid_y_pixels),
                      'Centroid-x_um': float(centroid_x_real),
                      'Centroid-y_um': float(centroid_y_real),
                      'Perimeter_um': float(perimeter),
-                     'Distance-from-mv_pixels': np.abs(distance_mv_pix),
-                     'Distance-from-tip_pixels': np.abs(distance_tip_pix),
+                     #'Distance-from-mv_pixels': np.abs(distance_mv_pix),
+                     #'Distance-from-tip_pixels': np.abs(distance_tip_pix),
                      'Distance-from-mv_um': np.abs(distance_mv_real),
                      'Distance-from-tip_um': np.abs(distance_tip_real),
-                     'Circularity_none': circularity}
+                     'Circularity_none': circularity,
+                     'Eccentricity_none': eccentricity,
+                     'Cell-Length_um': cell_length,
+                     'Cell-Width_um': cell_width,
+                     'Oreientation_none': orientation}
 
         # ADD MORE STUFF HERE IF NEEDED
         # Name of the dictionary key of the form: "Name_Units"
