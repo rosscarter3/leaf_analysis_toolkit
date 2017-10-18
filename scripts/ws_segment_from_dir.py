@@ -54,17 +54,11 @@ def watershed(im_path, seeds_path):
             if seed_array[i, j, 0] == seed_array[i, j, 1] == seed_array[i, j, 2]:
                 seed_array_bool[i, j] = 0
 
-    plt.imshow(seed_array_bool)
-    plt.show()
+    # plt.imshow(seed_array_bool)
+    # plt.show()
     seed_array_bool = skimage.morphology.label(seed_array_bool)
 
-    seed_array_bool = skimage.morphology.remove_small_objects(seed_array_bool, 2)
-
-    #plt.subplot(1, 2, 1)
-    #plt.imshow(im)
-    #plt.subplot(1, 2, 2)
-    #plt.imshow(seed_array_bool)
-    #plt.show()
+    # seed_array_bool = skimage.morphology.remove_small_objects(seed_array_bool, 2)
 
     seg = skimage.morphology.watershed(im, seed_array_bool, mask=np.ones_like(im))
 
@@ -78,8 +72,10 @@ def watershed(im_path, seeds_path):
     rand_col = cf.rand_cmap(len(np.unique(seg_col)), verbose=False)
     plt.imshow(im, cmap='gray_r')
     plt.imshow(seg_col, alpha=0.6,cmap=rand_col)
+    plt.imshow(seeds, alpha = 0.6)
     plt.subplots_adjust(left=0.04, bottom=0.01, right=0.9, top=0.96, wspace=0.2, hspace=0.2)
-    plt.savefig(color_path, dpi=400)
+    plt.show()
+    #plt.savefig(color_path, dpi=400)
 
     seg = cf.id_array2rgb(seg)
     seg_path = os.path.join(im_path + "ws_seg.png")
@@ -87,7 +83,65 @@ def watershed(im_path, seeds_path):
 
     return 0
 
+def auto_watershed(im_path):
+    from scipy import ndimage as ndi
+    from skimage.feature import peak_local_max
+    from skimage.util import invert
+    from skimage.filters import threshold_otsu, threshold_local
+    from skimage.feature import peak_local_max
 
+    im = Image.open(im_path)
+    im = np.array(im)
+    if len(im.shape) == 3:
+        im = np.mean(im, axis=2)
+    
+    inv =invert(im)
+
+    block_size = 35
+    adaptive_thresh = threshold_local(inv, block_size, offset=10)
+    binary_adaptive = inv > adaptive_thresh
+    
+    distance = ndi.distance_transform_edt(binary_adaptive)
+    local_maxi = peak_local_max(invert(distance), indices=False, footprint=np.ones((3, 3)),
+                                labels=binary_adaptive)
+    plt.hist(distance)
+    plt.show()
+
+    # dist_threshold = threshold_otsu(distance)
+    dist_threshold = threshold_local(distance, block_size, offset=10)
+    dist_otsu = distance > dist_threshold
+    markers = ndi.label(dist_otsu)[0]
+    labels = skimage.morphology.watershed(im, markers)
+    
+
+    plt.subplot(131)
+    plt.imshow(distance)
+    plt.subplot(132)
+    plt.imshow(markers)
+    plt.subplot(133)
+    plt.imshow(labels)
+    plt.show()
+
+    # TODO remove small cells!!
+    # TODO remove cells with circularity <0 , >1
+
+    seg[np.where(seg == seg[0, 0])] = 0
+
+    seg_col = seg
+    color_path = os.path.join(im_path + "colorful.png")
+    rand_col = cf.rand_cmap(len(np.unique(seg_col)), verbose=False)
+    plt.imshow(im, cmap='gray_r')
+    plt.imshow(seg_col, alpha=0.6,cmap=rand_col)
+    plt.imshow(seeds, alpha = 0.6)
+    plt.subplots_adjust(left=0.04, bottom=0.01, right=0.9, top=0.96, wspace=0.2, hspace=0.2)
+    plt.show()
+    #plt.savefig(color_path, dpi=400)
+
+    seg = cf.id_array2rgb(seg)
+    seg_path = os.path.join(im_path + "ws_seg.png")
+    plt.imsave(seg_path, seg)
+
+    return 0
 
 def main(args):
     print "Script running!"
@@ -102,7 +156,8 @@ def main(args):
     print "seeds path is: ", seeds_path
 
     if seeds_path is None:
-        print "No manual seeds image found\n"
+        print "No manual seeds image found, attempting automating seeding\n"
+	auto_watershed(im_paths[0])
         return
 
     for im_path in im_paths:
