@@ -152,7 +152,7 @@ def main():
                      'Eccentricity_none': eccentricity,
                      'Cell-Length_um': cell_length,
                      'Cell-Width_um': cell_width,
-                     'Oreientation_none': orientation}
+                     'Orientation_none': orientation}
 
         # ADD MORE STUFF HERE IF NEEDED
         # Name of the dictionary key of the form: "Name_Units"
