@@ -3,7 +3,6 @@ import argparse
 
 import numpy as np
 import skimage.morphology
-import scipy.ndimage as nd
 import matplotlib.pyplot as plt
 from PIL import Image, ImageFile
 
@@ -40,23 +39,22 @@ def watershed(im_path, seeds_path):
     if len(im.shape) == 3:
         im = np.mean(im, axis=2)
 
-    seeds = nd.imread(seeds_path)
+    seeds = Image.open(seeds_path)
+    seed_array = np.array(seeds, dtype=np.int64)
 
-    seed_array = seeds.astype(np.int64)
-
-    #seed_array[:, :, 1] = 0  # green
-    #seed_array[:, :, 2] = 0  # blue
+    if seed_array.shape[2] == 3:
+        red_condition = [255, 0, 0]
+    elif seed_array.shape[2] == 4:
+        red_condition = [255, 0, 0, 255]
 
     seed_array_bool = np.ones([seed_array.shape[0], seed_array.shape[1]])
 
-    #for i in xrange(seed_array.shape[0]):
-    #    for j in xrange(seed_array.shape[1]):
-    #        if seed_array[i, j, 0] == seed_array[i, j, 1] == seed_array[i, j, 2]:
-    #            seed_array_bool[i, j] = 0
-    
+    plt.imshow(seed_array)
+    plt.show()
+
     for column in range(seed_array.shape[0]):
         for row in range(seed_array.shape[1]):
-            if list(seed_array[column, row]) != [255, 0, 0, 255]:
+            if list(seed_array[column, row]) != red_condition:
                 seed_array_bool[column, row] = 0
 
     plt.imshow(seed_array_bool)
@@ -79,7 +77,7 @@ def watershed(im_path, seeds_path):
     plt.imshow(seg_col, alpha=0.6,cmap=rand_col)
     plt.imshow(seeds, alpha = 0.6)
     plt.subplots_adjust(left=0.04, bottom=0.01, right=0.9, top=0.96, wspace=0.2, hspace=0.2)
-    #plt.show()
+    # plt.show()
     plt.savefig(color_path, dpi=400)
 
     seg = cf.id_array2rgb(seg)
@@ -87,6 +85,7 @@ def watershed(im_path, seeds_path):
     plt.imsave(seg_path, seg)
 
     return 0
+
 
 def auto_watershed(im_path):
     from scipy import ndimage as ndi
@@ -117,7 +116,7 @@ def auto_watershed(im_path):
     dist_otsu = distance > dist_threshold
     markers = ndi.label(dist_otsu)[0]
     labels = skimage.morphology.watershed(im, markers)
-    
+    seg = labels
 
     plt.subplot(131)
     plt.imshow(distance)
@@ -140,13 +139,14 @@ def auto_watershed(im_path):
     plt.imshow(seeds, alpha = 0.6)
     plt.subplots_adjust(left=0.04, bottom=0.01, right=0.9, top=0.96, wspace=0.2, hspace=0.2)
     plt.show()
-    #plt.savefig(color_path, dpi=400)
+    # plt.savefig(color_path, dpi=400)
 
     seg = cf.id_array2rgb(seg)
     seg_path = os.path.join(im_path + "ws_seg.png")
     plt.imsave(seg_path, seg)
 
     return 0
+
 
 def main(args):
     print "Script running!"
@@ -162,7 +162,7 @@ def main(args):
 
     if seeds_path is None:
         print "No manual seeds image found, attempting automating seeding\n"
-	auto_watershed(im_paths[0])
+        auto_watershed(im_paths[0])
         return
 
     for im_path in im_paths:
