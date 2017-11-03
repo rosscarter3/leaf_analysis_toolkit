@@ -51,10 +51,10 @@ def do_kde(size, voxel, data_dict):
     relative_density = flipped_density / np.max(flipped_density)
     return np.fliplr(relative_density)
 
+
 def do_fast_kde(data_dict, size, voxel):
     import numpy as np
     from fastkde import fastKDE
-    import pylab as PP
     import matplotlib.pyplot as plt
     
     x_centroid = []
@@ -65,10 +65,14 @@ def do_fast_kde(data_dict, size, voxel):
         y_centroid.append(data['Centroid-y_um'])
     print np.array(x_centroid)
 
-    myPDF,axes = fastKDE.pdf(np.array(x_centroid), np.array(y_centroid))
+    myPDF_points = fastKDE.pdf_at_points(x_centroid, y_centroid)
+
+    #myPDF,axes = fastKDE.pdf(np.array(x_centroid), np.array(y_centroid))
     #print axes
-    
-    v1,v2 = axes
+    plt.scatter(x_centroid, y_centroid, c=myPDF_points)
+    plt.show()
+
+    # v1,v2 = axes
     #print myPDF, myPDF.shape
     
     from skimage.transform import resize
