@@ -112,6 +112,8 @@ def main():
 
     cell_props = skim.regionprops(id_array)
 
+    print "Number of cells total: ", len(cell_props)
+
     for cell in cell_props:
         # check for circulrity greater than 1
 
@@ -134,8 +136,9 @@ def main():
         cell_length = cell['major_axis_length']
         cell_width = cell['minor_axis_length']
         orientation = cell['orientation']
-	circularity = (4 * np.pi * area_real) / perimeter ** 2
+        circularity = (4 * np.pi * area_real) / perimeter ** 2
         if circularity > 1:
+            print "Cell ", cell_id, " ignored, circularity is: ", circularity
             continue
 
         cell_info = {'Area_um2': area_real,
@@ -158,6 +161,8 @@ def main():
         # Name of the dictionary key of the form: "Name_Units"
 
         cell_data_dict[cell_id] = cell_info
+
+    print "Analysed cells:", len(cell_data_dict)
 
     density_array = do_kde(size, voxel, cell_data_dict)
     for cell_id in cell_data_dict.iterkeys():
@@ -194,7 +199,8 @@ def main():
 
     leaf_data["timepoint"] = dir_list
     leaf_data["genotype"] = dir_list
-    leaf_data["no-of-cells"] = len(cell_data_dict)
+    leaf_data["Total Cells"] = len(cell_props)
+    leaf_data["Cells Analysed"] = len(cell_data_dict)
     area = 0
     for data_dict in cell_data_dict.itervalues():
         area += data_dict['Area_um2']
