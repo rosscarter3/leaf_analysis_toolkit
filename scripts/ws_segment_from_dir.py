@@ -40,32 +40,28 @@ def watershed(im_path, seeds_path):
     if len(im.shape) == 3:
         im = np.mean(im, axis=2)
 
-    seeds = nd.imread(seeds_path)
+    seed_array = nd.imread(seeds_path)
 
-    seed_array = seeds.astype(np.int64)
+    seed_array_bool = np.zeros_like(im)
+    for i in xrange(seed_array.shape[0]):
+        for j in xrange(seed_array.shape[1]):
+            if list(seed_array[i, j]) == [255, 0, 0, 255]:
 
-    seed_array[:, :, 1] = 0  # green
-    seed_array[:, :, 2] = 0  # blue
+                seed_array_bool[i, j] = 255
 
-    # TODO fix shape of seeds
-
-    seed_array_bool = seed_array[:, :, 0] > 254
-
-    # plt.imshow(seed_array_bool)
-    # plt.show()
     seed_array_bool = skimage.morphology.label(seed_array_bool)
     seed_array_bool = skimage.morphology.remove_small_objects(seed_array_bool, 2)
 
-    plt.subplot(1, 2, 1)
-    plt.imshow(im)
-    plt.subplot(1, 2, 2)
-    plt.imshow(seed_array_bool)
-    plt.show()
-
     seg = skimage.morphology.watershed(im, seed_array_bool, mask=np.ones_like(im))
-
+    seg = skimage.morphology.remove_small_objects(seg, 20, in_place=True)
     # TODO remove small cells!!
     # TODO remove cells with circularity <0 , >1
+    # from scipy import ndimage as ndi
+    # label_objects, nb_labels = ndi.label(seg)
+    # sizes = np.bincount(label_objects.ravel())
+    # mask_sizes = sizes > 20
+    # mask_sizes[0] = 0
+    # seg_cleaned = mask_sizes[label_objects]
 
     seg[np.where(seg == seg[0, 0])] = 0
 
@@ -76,7 +72,6 @@ def watershed(im_path, seeds_path):
     plt.imshow(seg_col, alpha=0.6, cmap='prism')
     plt.subplots_adjust(left=0.04, bottom=0.01, right=0.9, top=0.96, wspace=0.2, hspace=0.2)
     plt.savefig(color_path, dpi=400)
-    # plt.show()
 
     seg = cf.id_array2rgb(seg)
     seg_path = os.path.join(im_path + "ws_seg.png")
