@@ -6,10 +6,13 @@ import os
 import csv
 import json
 import argparse
+import time
+import timeit
 
 import numpy as np
 from scipy import stats
 import skimage.measure as skim
+import tqdm
 
 import common_functions as cf
 
@@ -43,7 +46,7 @@ def do_kde(size, voxel, data_dict):
     #                                         0:size_y * voxel_y:500j]
 
     positions = np.vstack([grid_x_points.ravel(), grid_y_points.ravel()])
-    print "Calculating KDE\n"
+    print "Calculating KDE..."
     kernel = stats.gaussian_kde(values)
     density = np.reshape(kernel(positions).T, grid_x_points.shape)
     flipped_density = np.rot90(density, 3)
@@ -104,14 +107,14 @@ def main():
 
     a_r, b_r, c_r = return_coefficient(t_x_r, t_y_r, b_x_r, b_y_r)
 
-    # calculate cell level data
-
     cell_data_dict = {}
     cell_info = {}
 
+    print "Calculating cell level variables... "
+
     cell_props = skim.regionprops(id_array)
 
-    for cell in cell_props:
+    for cell in tqdm.tqdm(cell_props):
         cell_id = cell['label']
         area_real = cell['area'] * voxel[0] * voxel[1]
         centroid_x_pixels = cell['centroid'][1]
@@ -128,7 +131,10 @@ def main():
 
         perimeter = cell['perimeter'] * voxel[0]
 
-        circularity = (4 * np.pi * area_real) / perimeter ** 2
+        try:
+            circularity = (4 * np.pi * area_real) / perimeter ** 2
+        except RuntimeWarning:
+            circularity = 0
 
         cell_info = {'Area_um2': area_real,
                      'Centroid-x_pixels': int(centroid_x_pixels),
@@ -144,11 +150,12 @@ def main():
 
         # ADD MORE STUFF HERE IF NEEDED
         # Name of the dictionary key of the form: "Name_Units"
+        # See heatmap.py for allowed units or to add more
 
         cell_data_dict[cell_id] = cell_info
 
     density_array = do_kde(size, voxel, cell_data_dict)
-    for cell_id in cell_data_dict.iterkeys():
+    for cell_id in tqdm.tqdm(cell_data_dict.iterkeys()):
         av_density = np.mean(density_array[id_array == int(cell_id)])
         cell_data_dict[cell_id]['Relative-Cell-Density_none'] = av_density
 
@@ -176,27 +183,27 @@ def main():
     # calculate leaf level data
     # TODO needs work for handling of directory name
 
-    leaf_data = {}
-
-    dir_list = args.exp_dir.split('/')[-2].split('_')
-
-    leaf_data["timepoint"] = dir_list[1]
-    leaf_data["genotype"] = dir_list
-    leaf_data["no-of-cells"] = len(cell_data_dict)
-    area = 0
-    for data_dict in cell_data_dict.itervalues():
-        area += data_dict['Area_um2']
-    leaf_data["leaf-area_um2"] = area
-
-    leaf_data_csv_data_types = leaf_data.keys()
-    csv_path = os.path.join(exp_dir, "leaf_data.csv")
-    with open(csv_path, 'wb') as csv_file:
-        csvwriter = csv.writer(csv_file, delimiter=',')
-        csvwriter.writerow(leaf_data_csv_data_types)
-        data_list = []
-        for data_type in leaf_data_csv_data_types:
-            data_list.append(leaf_data[data_type])
-        csvwriter.writerow(data_list)
+    # print "Calculating leaf level variables... "
+    #
+    # leaf_data = {}
+    # dir_list = args.exp_dir.split('/')[-2].split('_')
+    # leaf_data["timepoint"] = dir_list[1]
+    # leaf_data["genotype"] = dir_list
+    # leaf_data["no-of-cells"] = len(cell_data_dict)
+    # area = 0
+    # for data_dict in cell_data_dict.itervalues():
+    #     area += data_dict['Area_um2']
+    # leaf_data["leaf-area_um2"] = area
+    #
+    # leaf_data_csv_data_types = leaf_data.keys()
+    # csv_path = os.path.join(exp_dir, "leaf_data.csv")
+    # with open(csv_path, 'wb') as csv_file:
+    #     csvwriter = csv.writer(csv_file, delimiter=',')
+    #     csvwriter.writerow(leaf_data_csv_data_types)
+    #     data_list = []
+    #     for data_type in leaf_data_csv_data_types:
+    #         data_list.append(leaf_data[data_type])
+    #     csvwriter.writerow(data_list)
 
 
 if __name__ == '__main__':
