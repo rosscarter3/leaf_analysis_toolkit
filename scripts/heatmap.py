@@ -27,7 +27,7 @@ def main():
         print "Segmented Image not found\n"
         return
 
-    print seg_path
+    # print seg_path
     id_array = cf.path2id_array(seg_path)
 
     data_path = os.path.join(exp_dir, "data.json")
@@ -139,10 +139,12 @@ def main():
         plt.xlim(xlims)
         plt.ylim(ylims)
 
-        plt.savefig(os.path.join(exp_dir, "heatmaps", "oultine" + ".png"), format='png', dpi=1000)
+        plt.savefig(os.path.join(exp_dir, "heatmaps", "outline" + ".png"), format='png', dpi=1000)
 
     for data_type in data_to_plot:
-        do_heatmap(data_type)
+        to_paint = "Distance" in data_type or "Centroid" in data_type
+        if not to_paint:
+            do_heatmap(data_type)
 
     do_cell_outlines()
 
