@@ -6,8 +6,6 @@ import os
 import csv
 import json
 import argparse
-import time
-import timeit
 
 import numpy as np
 from scipy import stats
@@ -46,12 +44,54 @@ def do_kde(size, voxel, data_dict):
     #                                         0:size_y * voxel_y:500j]
 
     positions = np.vstack([grid_x_points.ravel(), grid_y_points.ravel()])
-    print "Calculating KDE..."
+    print "Calculating KDE\n"
     kernel = stats.gaussian_kde(values)
     density = np.reshape(kernel(positions).T, grid_x_points.shape)
     flipped_density = np.rot90(density, 3)
     relative_density = flipped_density / np.max(flipped_density)
     return np.fliplr(relative_density)
+
+
+def do_fast_kde(data_dict, size, voxel):
+    import numpy as np
+    from fastkde import fastKDE
+    import matplotlib.pyplot as plt
+    
+    x_centroid = []
+    y_centroid = []
+    values = None
+    for cid, data, in data_dict.iteritems():
+        x_centroid.append(data['Centroid-x_um'])
+        y_centroid.append(data['Centroid-y_um'])
+    print np.array(x_centroid)
+
+    myPDF_points = fastKDE.pdf_at_points(x_centroid, y_centroid)
+
+    #myPDF,axes = fastKDE.pdf(np.array(x_centroid), np.array(y_centroid))
+    #print axes
+    plt.scatter(x_centroid, y_centroid, c=myPDF_points)
+    plt.show()
+
+    # v1,v2 = axes
+    #print myPDF, myPDF.shape
+    
+    from skimage.transform import resize
+    print size
+    
+    myPDF_resized = resize(myPDF, [size[0], size[1]])
+    
+    plt.subplot(131)
+    plt.plot(x_centroid, y_centroid, '.')
+    plt.xlim([0, size[0]*voxel[0]])
+    plt.ylim([size[1]*voxel[1] ,0])
+    plt.axis('equal')
+    plt.subplot(132)
+    plt.imshow(myPDF)
+    plt.subplot(133)
+    plt.imshow(myPDF_resized)
+    
+    plt.show()
+    return myPDF_resized
 
 
 def return_coefficient(t_x, t_y, b_x, b_y):
@@ -107,13 +147,12 @@ def main():
 
     a_r, b_r, c_r = return_coefficient(t_x_r, t_y_r, b_x_r, b_y_r)
 
+    # calculate cell level data
+
     cell_data_dict = {}
     cell_info = {}
 
-    print "Calculating cell level variables... "
-
     cell_props = skim.regionprops(id_array)
-
 
     for cell in cell_props:
         # check for circulrity greater than 1
@@ -133,16 +172,11 @@ def main():
         centroid_y_real = centroid_y_pixels * voxel[0]
 
         perimeter = cell['perimeter'] * voxel[0]
-
-        try:
-            circularity = (4 * np.pi * area_real) / perimeter ** 2
-        except RuntimeWarning:
-            circularity = 0
         eccentricity = cell['eccentricity']
         cell_length = cell['major_axis_length']
         cell_width = cell['minor_axis_length']
         orientation = cell['orientation']
-    	circularity = (4 * np.pi * area_real) / perimeter ** 2
+        circularity = (4 * np.pi * area_real) / perimeter ** 2
         if circularity > 1:
             continue
 
@@ -164,15 +198,19 @@ def main():
 
         # ADD MORE STUFF HERE IF NEEDED
         # Name of the dictionary key of the form: "Name_Units"
-        # See heatmap.py for allowed units or to add more
 
         cell_data_dict[cell_id] = cell_info
-
-    density_array = do_kde(size, voxel, cell_data_dict)
-    for cell_id in tqdm.tqdm(cell_data_dict.iterkeys()):
+    
+    #do_fast_kde(cell_data_dict, size)
+    
+    #density_array = do_kde(size, voxel, cell_data_dict)
+    density_array = do_fast_kde(cell_data_dict, size, voxel)
+    
+    
+    for cell_id in cell_data_dict.iterkeys():
         av_density = np.mean(density_array[id_array == int(cell_id)])
         cell_data_dict[cell_id]['Relative-Cell-Density_none'] = av_density
-
+    
     # automatic csv writing for each key in cell data dictionary
 
     csv_headings = [s for s in cell_info.iterkeys()]
@@ -226,3 +264,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     main()
+
+
+
+

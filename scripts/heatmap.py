@@ -10,7 +10,7 @@ import matplotlib.colors as colors
 import matplotlib.pyplot as plt
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 import numpy as np
-
+import tqdm
 
 import common_functions as cf
 
@@ -50,8 +50,6 @@ def main():
     heatmap_shape = [id_array.shape[0], id_array.shape[1], 4]
     # TODO check extent
 
-    extent = [0, heatmap_shape[1] * vox[1], 0, heatmap_shape[0] * vox[0]]
-
     xs, ys = [], []
     for cell_data in data_dict.itervalues():
         xs.append(cell_data['Centroid-x_um'])
@@ -62,6 +60,8 @@ def main():
 
     xlims = (min(xs) - border, max(xs) + border)
     ylims = ((im_height - max(ys)) - border, (im_height - min(ys)) + border)
+    
+    extent = [xlims[0], xlims[1], ylims[0], ylims[1]]
 
     def units_string(data_type):
         units = data_type.split("_")[1]
@@ -92,31 +92,30 @@ def main():
         heatmap = np.full(shape=heatmap_shape, fill_value=[0, 0, 0, 255], dtype='float32')
 
         for cell_id, cell_data in data_dict.iteritems():
-            # print cell_id, cell_data
-            if 'Density' in data_type and float(cell_data[data_type]) < 0.85:
-                # print cell_data[data_type]
+            if 'Density' in data_type and float(cell_data[data_type]) < 0.7:
                 color = color_map.to_rgba(cell_data[data_type])
                 col_list = list(color)
                 col_list[3] = 0.5
-                # print color
                 heatmap[id_array == int(cell_id)] = col_list
-                # print "="*10
             else:
                 color = color_map.to_rgba(cell_data[data_type])
                 heatmap[id_array == int(cell_id)] = color
 
+        
         plt.figure(figsize=(10, 10))
         ax1 = plt.subplot(111)
         plt.title(data_type.split("_")[0])
-        plt.imshow(heatmap, cmap=color_scheme, interpolation='nearest', extent=extent)
-        plt.imshow(outline_array, cmap=color_scheme, interpolation='nearest', extent=extent)
+        #plt.imshow(heatmap, cmap=color_scheme, interpolation='nearest', extent=extent)
+        #plt.imshow(outline_array, cmap=color_scheme, interpolation='nearest', extent=extent)
+        plt.imshow(heatmap, cmap=color_scheme, interpolation='nearest')
+        plt.imshow(outline_array, cmap=color_scheme, interpolation='nearest')
         plt.clim(min(data_list), max(data_list))
         cf.add_scale_bar(ax1)
         ax1.axis('on')
         ax1.get_xaxis().set_ticks([])
         ax1.get_yaxis().set_ticks([])
-        plt.xlim(xlims)
-        plt.ylim(ylims)
+        #plt.xlim(xlims)
+        #plt.ylim(ylims)
         divider1 = make_axes_locatable(ax1)
         cax1 = divider1.append_axes("right", size="5%", pad=0.05)
         cbar = plt.colorbar(cax=cax1)

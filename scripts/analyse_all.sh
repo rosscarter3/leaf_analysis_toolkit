@@ -1,6 +1,4 @@
-#!/usr/bin/bash
-
-
+#!/bin/bash
 
 for d in ${1}/*; do
     if [[ ${d} == *'proj_'* ]]; then
