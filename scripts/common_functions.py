@@ -33,15 +33,29 @@ def get_seg_path(exp_dir):
 def add_scale_bar(axis, voxel_x):
     xdim = axis.get_xlim()[1]
 
-    def find_scale_bar_length(xdim):
-        length = xdim/8 * voxel_x
-        lengths = [2, 5, 10, 20, 50, 100, 200]
-        return min(lengths, key=lambda x: abs(x - length))
+    xdim_um = xdim*voxel_x
+    length_um = xdim_um/8
+    lengths = [2, 5, 10, 20, 50, 100, 200]
+    nice_length_um = min(lengths, key=lambda x: abs(x - length_um))
 
-    size = find_scale_bar_length(xdim)
-    text = str(size)+r'$\mu$m'
+    length_pixels = nice_length_um / voxel_x
+
+    # def find_scale_bar_length_pix(xdim):
+    #     length = xdim/8
+    #
+    #     lengths = [2, 5, 10, 20, 50, 100, 200]
+    #     return min(lengths, key=lambda x: abs(x - length))
+    #
+    # def find_scale_bar_length_um(xdim):
+    #     length = xdim/8
+    #
+    #     lengths = [2, 5, 10, 20, 50, 100, 200]
+    #     return min(lengths, key=lambda x: abs(x - length))
+    #
+    # size = find_scale_bar_length_pix(xdim)
+    text = str(nice_length_um)+r'$\mu$m'
     from mpl_toolkits.axes_grid1.anchored_artists import AnchoredSizeBar
-    bar = AnchoredSizeBar(axis.transData, size, text,
+    bar = AnchoredSizeBar(axis.transData, length_pixels, text,
                           pad=0.5, loc=4, sep=5, borderpad=0.5, frameon=True)
     bar.patch.set(alpha=1, boxstyle='square')
     axis.add_artist(bar)
