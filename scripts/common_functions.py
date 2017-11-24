@@ -22,6 +22,7 @@ def read_dims(idir):
 
 
 def get_seg_path(exp_dir):
+    """gets the path of the segmented image from an experiment directory"""
     seg_path = ""
     for dirpath, _, filenames in os.walk(exp_dir):
         for f in filenames:
@@ -31,28 +32,14 @@ def get_seg_path(exp_dir):
 
 
 def add_scale_bar(axis, voxel_x):
+    """adds a scalebar to the matplotlib plot 'axis' in microns that is about
+    1/8 of the width of the image"""
     xdim = axis.get_xlim()[1]
-
     xdim_um = xdim*voxel_x
     length_um = xdim_um/8
     lengths = [2, 5, 10, 20, 50, 100, 200]
     nice_length_um = min(lengths, key=lambda x: abs(x - length_um))
-
     length_pixels = nice_length_um / voxel_x
-
-    # def find_scale_bar_length_pix(xdim):
-    #     length = xdim/8
-    #
-    #     lengths = [2, 5, 10, 20, 50, 100, 200]
-    #     return min(lengths, key=lambda x: abs(x - length))
-    #
-    # def find_scale_bar_length_um(xdim):
-    #     length = xdim/8
-    #
-    #     lengths = [2, 5, 10, 20, 50, 100, 200]
-    #     return min(lengths, key=lambda x: abs(x - length))
-    #
-    # size = find_scale_bar_length_pix(xdim)
     text = str(nice_length_um)+r'$\mu$m'
     from mpl_toolkits.axes_grid1.anchored_artists import AnchoredSizeBar
     bar = AnchoredSizeBar(axis.transData, length_pixels, text,
@@ -195,7 +182,6 @@ def path2outline_array(path):
 
 class numpy_JSON_Encoder(json.JSONEncoder):
     """json encoder for encoding numpy data types"""
-
     def default(self, obj):
         if isinstance(obj, np.integer):
             return int(obj)
@@ -238,7 +224,9 @@ def load_metadata(metadata_path):
         for row in file_handle:
             metadata.append(re.findall("[-+]?\d+[.]?\d*[eE]?[-+]?\d*", row))
 
-    metadata_dict = {'vox_x': float(metadata[1][0]), 'vox_y': float(metadata[2][0]), 'vox_z': float(metadata[3][0])}
+    metadata_dict = {'vox_x': float(metadata[1][0]),
+                     'vox_y': float(metadata[2][0]),
+                     'vox_z': float(metadata[3][0])}
     return metadata_dict
 
 
