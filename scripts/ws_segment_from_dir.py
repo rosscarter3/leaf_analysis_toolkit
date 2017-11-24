@@ -1,3 +1,4 @@
+#! /usr/bin/python
 import os
 import argparse
 
@@ -49,8 +50,8 @@ def watershed(im_path, seeds_path):
 
     seed_array_bool = np.ones([seed_array.shape[0], seed_array.shape[1]])
 
-    plt.imshow(seed_array)
-    plt.show()
+    # plt.imshow(seed_array)
+    # plt.show()
 
     for column in range(seed_array.shape[0]):
         for row in range(seed_array.shape[1]):
@@ -98,47 +99,60 @@ def auto_watershed(im_path):
     if len(im.shape) == 3:
         im = np.mean(im, axis=2)
     
-    inv =invert(im)
+    inv = invert(im)
 
-    block_size = 35
-    adaptive_thresh = threshold_local(inv, block_size, offset=10)
-    binary_adaptive = inv > adaptive_thresh
-    
-    distance = ndi.distance_transform_edt(binary_adaptive)
-    local_maxi = peak_local_max(invert(distance), indices=False, footprint=np.ones((3, 3)),
-                                labels=binary_adaptive)
-    plt.hist(distance)
+    plt.imshow(inv)
     plt.show()
+
+    otsu = inv > threshold_otsu(inv)
+
+    im = skimage.morphology.binary_closing(otsu, selem=skimage.morphology.diamond(1))
+    im = skimage.morphology.binary_erosion(im, selem=None, out=None)
+
+    plt.imshow(im)
+    plt.show()
+
+    label_otsu =
+
+    # block_size = 35
+    # adaptive_thresh = threshold_local(inv, block_size, offset=10)
+    # binary_adaptive = inv > adaptive_thresh
+    
+    # distance = ndi.distance_transform_edt(binary_adaptive)
+    # local_maxi = peak_local_max(invert(distance), indices=False, footprint=np.ones((3, 3)),
+    #                             labels=binary_adaptive)
+    # plt.hist(distance)
+    # plt.show()
 
     # dist_threshold = threshold_otsu(distance)
-    dist_threshold = threshold_local(distance, block_size, offset=10)
-    dist_otsu = distance > dist_threshold
-    markers = ndi.label(dist_otsu)[0]
-    labels = skimage.morphology.watershed(im, markers)
-    seg = labels
-
-    plt.subplot(131)
-    plt.imshow(distance)
-    plt.subplot(132)
-    plt.imshow(markers)
-    plt.subplot(133)
-    plt.imshow(labels)
-    plt.show()
-
-    seg[np.where(seg == seg[0, 0])] = 0
-
-    seg_col = seg
-    color_path = os.path.join(im_path + "colorful.png")
-    rand_col = cf.rand_cmap(len(np.unique(seg_col)), verbose=False)
-    plt.imshow(im, cmap='gray_r')
-    plt.imshow(seg_col, alpha=0.6,cmap=rand_col)
-    plt.imshow(seeds, alpha = 0.6)
-    plt.subplots_adjust(left=0.04, bottom=0.01, right=0.9, top=0.96, wspace=0.2, hspace=0.2)
-    plt.show()
-    # plt.savefig(color_path, dpi=400)
-
-    seg = cf.id_array2rgb(seg)
-    seg_path = os.path.join(im_path + "ws_seg.png")
+    # dist_threshold = threshold_local(distance, block_size, offset=10)
+    # dist_otsu = distance > dist_threshold
+    # markers = ndi.label(dist_otsu)[0]
+    # labels = skimage.morphology.watershed(im, markers)
+    # seg = labels
+    #
+    # plt.subplot(131)
+    # plt.imshow(distance)
+    # plt.subplot(132)
+    # plt.imshow(markers)
+    # plt.subplot(133)
+    # plt.imshow(labels)
+    # plt.show()
+    #
+    # seg[np.where(seg == seg[0, 0])] = 0
+    #
+    # seg_col = seg
+    # color_path = os.path.join(im_path + "colorful.png")
+    # rand_col = cf.rand_cmap(len(np.unique(seg_col)), verbose=False)
+    # plt.imshow(im, cmap='gray_r')
+    # plt.imshow(seg_col, alpha=0.6,cmap=rand_col)
+    # plt.imshow(seeds, alpha = 0.6)
+    # plt.subplots_adjust(left=0.04, bottom=0.01, right=0.9, top=0.96, wspace=0.2, hspace=0.2)
+    # plt.show()
+    # # plt.savefig(color_path, dpi=400)
+    #
+    # seg = cf.id_array2rgb(seg)
+    # seg_path = os.path.join(im_path + "ws_seg.png")
 
     return 0
 
@@ -159,6 +173,8 @@ def main(args):
         print "No manual seeds image found, attempting automating seeding\n"
         auto_watershed(im_paths[0])
         return
+
+    # auto_watershed(im_paths[0])
 
     for im_path in im_paths:
         print "Segmenting: " + os.path.basename(im_path)
@@ -215,5 +231,5 @@ if __name__ == '__main__':
     parser.add_argument("dir_path", help="")
     args = parser.parse_args()
     main(args)
-    # watershed_test()
+    # auto_watershed(args)
 
