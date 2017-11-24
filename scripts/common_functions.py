@@ -30,11 +30,11 @@ def get_seg_path(exp_dir):
     return seg_path
 
 
-def add_scale_bar(axis):
+def add_scale_bar(axis, voxel_x):
     xdim = axis.get_xlim()[1]
 
     def find_scale_bar_length(xdim):
-        length = xdim/8
+        length = xdim/8 * voxel_x
         lengths = [2, 5, 10, 20, 50, 100, 200]
         return min(lengths, key=lambda x: abs(x - length))
 
