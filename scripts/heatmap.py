@@ -10,7 +10,6 @@ import matplotlib.colors as colors
 import matplotlib.pyplot as plt
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 import numpy as np
-import tqdm
 
 import common_functions as cf
 
@@ -46,9 +45,14 @@ def main():
 
     size, vox = cf.read_dims(exp_dir)
 
+    print size, vox
+    print size[0]*vox[0], ",", size[1]*vox[1]
+
     color_scheme = 'viridis'
     heatmap_shape = [id_array.shape[0], id_array.shape[1], 4]
     # TODO check extent
+
+    print heatmap_shape
 
     xs, ys = [], []
     for cell_data in data_dict.itervalues():
@@ -58,10 +62,16 @@ def main():
     im_height = id_array.shape[1] * vox[1]
     border = 0.07 * im_height
 
+    print "im height: ", im_height
+
     xlims = (min(xs) - border, max(xs) + border)
     ylims = ((im_height - max(ys)) - border, (im_height - min(ys)) + border)
-    
+
+    print "xlim, ylim: ", xlims, ylims
+
     extent = [xlims[0], xlims[1], ylims[0], ylims[1]]
+
+    print "extent: ", extent
 
     def units_string(data_type):
         units = data_type.split("_")[1]
@@ -110,12 +120,12 @@ def main():
         plt.imshow(heatmap, cmap=color_scheme, interpolation='nearest')
         plt.imshow(outline_array, cmap=color_scheme, interpolation='nearest')
         plt.clim(min(data_list), max(data_list))
-        cf.add_scale_bar(ax1)
+        cf.add_scale_bar(ax1, vox[0])
         ax1.axis('on')
         ax1.get_xaxis().set_ticks([])
         ax1.get_yaxis().set_ticks([])
-        #plt.xlim(xlims)
-        #plt.ylim(ylims)
+        # plt.xlim(xlims)
+        # plt.ylim(ylims)
         divider1 = make_axes_locatable(ax1)
         cax1 = divider1.append_axes("right", size="5%", pad=0.05)
         cbar = plt.colorbar(cax=cax1)
@@ -131,7 +141,7 @@ def main():
         ax1 = plt.subplot(111)
         plt.title("Outline")
         plt.imshow(outline_array, cmap=color_scheme, interpolation='nearest', extent=extent)
-        cf.add_scale_bar(ax1)
+        cf.add_scale_bar(ax1, vox[0])
         ax1.axis('on')
         ax1.get_xaxis().set_ticks([])
         ax1.get_yaxis().set_ticks([])
