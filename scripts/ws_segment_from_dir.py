@@ -112,7 +112,7 @@ def auto_watershed(im_path):
     plt.imshow(im)
     plt.show()
 
-    label_otsu =
+    # label_otsu =
 
     # block_size = 35
     # adaptive_thresh = threshold_local(inv, block_size, offset=10)
