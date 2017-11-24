@@ -140,8 +140,8 @@ def main():
         except RuntimeWarning:
             circularity = 0
         eccentricity = cell['eccentricity']
-        cell_length = cell['major_axis_length']
-        cell_width = cell['minor_axis_length']
+        cell_length = cell['major_axis_length']*voxel[0]
+        cell_width = cell['minor_axis_length']*voxel[0]
         orientation = cell['orientation']
         circularity = (4 * np.pi * area_real) / perimeter ** 2
         if circularity > 1:
