@@ -4,6 +4,7 @@ import argparse
 
 import numpy as np
 import skimage.morphology
+from skimage.segmentation import watershed as sk_watershed
 import matplotlib.pyplot as plt
 from PIL import Image, ImageFile
 
@@ -58,14 +59,14 @@ def watershed(im_path, seeds_path):
             if list(seed_array[column, row]) != red_condition:
                 seed_array_bool[column, row] = 0
 
-    plt.imshow(seed_array_bool)
-    plt.show()
+    # plt.imshow(seed_array_bool)
+    # plt.show()
 
     seed_array_bool = skimage.morphology.label(seed_array_bool)
 
     # seed_array_bool = skimage.morphology.remove_small_objects(seed_array_bool, 2)
 
-    seg = skimage.morphology.watershed(im, seed_array_bool, mask=np.ones_like(im))
+    seg = sk_watershed(im, seed_array_bool, mask=np.ones_like(im))
     seg = skimage.morphology.remove_small_objects(seg, 20, in_place=True)
 
     seg[np.where(seg == seg[0, 0])] = 0
@@ -158,29 +159,29 @@ def auto_watershed(im_path):
 
 
 def main(args):
-    print "Script running!"
+    print("Script running!")
     exp_dir = args.dir_path
 
-    print "experiment directory: ", exp_dir
+    print("experiment directory: ", exp_dir)
 
     im_paths = get_im_paths(exp_dir)
     seeds_path = get_seeds_path(exp_dir)
 
-    print "im path is: ", im_paths
-    print "seeds path is: ", seeds_path
+    print("im path is: ", im_paths)
+    print("seeds path is: ", seeds_path)
 
     if seeds_path is None:
-        print "No manual seeds image found, attempting automating seeding\n"
+        print("No manual seeds image found, attempting automating seeding\n")
         auto_watershed(im_paths[0])
         return
 
     # auto_watershed(im_paths[0])
 
     for im_path in im_paths:
-        print "Segmenting: " + os.path.basename(im_path)
+        print("Segmenting: " + os.path.basename(im_path))
         watershed(im_path, seeds_path)
 
-    print "finished"
+    print("finished")
     return 0
 
 

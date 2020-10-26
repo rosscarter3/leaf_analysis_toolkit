@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+ #!/usr/bin/env python
 """extracts quantitative values and performs a kernel density
 estimation from segmented images and writes to .csv file"""
 
@@ -35,7 +35,7 @@ def do_kde(size, voxel, data_dict):
     x_centroid = []
     y_centroid = []
     values = None
-    for cid, data, in data_dict.iteritems():
+    for cid, data, in list(data_dict.items()):
         x_centroid.append(data['Centroid-x_um'])
         y_centroid.append(data['Centroid-y_um'])
         values = np.vstack([x_centroid, y_centroid])
@@ -46,7 +46,7 @@ def do_kde(size, voxel, data_dict):
     #                                         0:size_y * voxel_y:500j]
 
     positions = np.vstack([grid_x_points.ravel(), grid_y_points.ravel()])
-    print "Calculating KDE..."
+    print("Calculating KDE...")
     kernel = stats.gaussian_kde(values)
     density = np.reshape(kernel(positions).T, grid_x_points.shape)
     flipped_density = np.rot90(density, 3)
@@ -82,7 +82,7 @@ def main():
 
     seg_path = cf.get_seg_path(exp_dir)
     if not os.path.exists(seg_path):
-        print "No segmented image found\n"
+        print("No segmented image found\n")
         return
 
     id_array = cf.path2id_array(seg_path)
@@ -90,10 +90,10 @@ def main():
 
     tip_path = os.path.join(exp_dir, "tip.txt")
     if not os.path.exists(tip_path):
-        print "\"tip.txt\" not found\n"
+        print("\"tip.txt\" not found\n")
         return
 
-    print "extracting data from: ", os.path.basename(seg_path)
+    print(("extracting data from: ", os.path.basename(seg_path)))
 
     tip, base = read_tip(tip_path)
 
@@ -110,11 +110,11 @@ def main():
     cell_data_dict = {}
     cell_info = {}
 
-    print "Calculating cell level variables... "
+    print("Calculating cell level variables... ")
 
     cell_props = skim.regionprops(id_array)
 
-    print "Number of cells total: ", len(cell_props)
+    print("Number of cells total: ", len(cell_props))
 
     for cell in cell_props:
         # check for circulrity greater than 1
@@ -145,7 +145,7 @@ def main():
         orientation = cell['orientation']
         circularity = (4 * np.pi * area_real) / perimeter ** 2
         if circularity > 1:
-            print "Cell ", cell_id, " ignored, circularity is: ", circularity
+            print("Cell ", cell_id, " ignored, circularity is: ", circularity)
             continue
 
         cell_info = {'Area_um2': area_real,
@@ -170,23 +170,23 @@ def main():
 
         cell_data_dict[cell_id] = cell_info
 
-    print "Analysed cells:", len(cell_data_dict)
+    print("Analysed cells:", len(cell_data_dict))
 
     density_array = do_kde(size, voxel, cell_data_dict)
-    for cell_id in tqdm.tqdm(cell_data_dict.iterkeys()):
+    for cell_id in tqdm.tqdm(iter(list(cell_data_dict.keys()))):
         av_density = np.mean(density_array[id_array == int(cell_id)])
         cell_data_dict[cell_id]['Relative-Cell-Density_none'] = av_density
 
     # automatic csv writing for each key in cell data dictionary
 
-    csv_headings = [s for s in cell_info.iterkeys()]
+    csv_headings = [s for s in list(cell_info.keys())]
     csv_headings.insert(0, 'Cell_ID')
 
     csv_path = os.path.join(exp_dir, "data.csv")
     with open(csv_path, 'wb') as csv_file:
         csvwriter = csv.writer(csv_file, delimiter=',')
         csvwriter.writerow(csv_headings)
-        for cell_id, data_dict in cell_data_dict.iteritems():
+        for cell_id, data_dict in list(cell_data_dict.items()):
             data_list = [cell_id]
             for data_type in csv_headings[1:]:
                 data_list.append(data_dict[data_type])
@@ -210,11 +210,11 @@ def main():
     leaf_data["Total Cells"] = len(cell_props)
     leaf_data["Cells Analysed"] = len(cell_data_dict)
     area = 0
-    for data_dict in cell_data_dict.itervalues():
+    for data_dict in list(cell_data_dict.values()):
         area += data_dict['Area_um2']
     leaf_data["leaf-area_um2"] = area
 
-    leaf_data_csv_data_types = leaf_data.keys()
+    leaf_data_csv_data_types = list(leaf_data.keys())
     csv_path = os.path.join(exp_dir, "leaf_data.csv")
     with open(csv_path, 'wb') as csv_file:
         csvwriter = csv.writer(csv_file, delimiter=',')

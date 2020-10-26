@@ -51,7 +51,7 @@ def main():
     elif platform == "darwin":
         bin_path = os.path.join(os.path.dirname(script_path), "../bin/spm2D_1_0_1-reversed-mac_bld")
     else:
-        print "system not supported"
+        print("system not supported")
         return 0
 
     par_path = os.path.join(os.path.dirname(script_path), "../parameter_files/spm2d.par")

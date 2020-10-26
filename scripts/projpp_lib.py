@@ -16,7 +16,7 @@ import numpy as np
 def print_transfer_fn(function):
     """prints the transfer function fro 0 to 255 in steps of ten"""
     for i in range(0, 255, 10):
-        print("%d: %d" % (i, function[i]))
+        print(("%d: %d" % (i, function[i])))
 
 
 def gen_transfer_fn():
@@ -80,7 +80,7 @@ def main():
     try:
         filename = sys.argv[1]
     except IndexError:
-        print("Usage: %s filename" % (os.path.basename(sys.argv[0])))
+        print(("Usage: %s filename" % (os.path.basename(sys.argv[0]))))
         sys.exit(1)
 
         # raw = scipy.misc.imread(filename)

@@ -9,7 +9,7 @@ import numpy.linalg as la
 
 
 def flush_message(message):
-    print(message),
+    print((message), end=' ')
     sys.stdout.flush()
 
 

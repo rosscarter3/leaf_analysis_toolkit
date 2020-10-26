@@ -51,21 +51,21 @@ def filtering(img, filter_type="gaussian", filter_value=0.5):
 
     if filter_type == 'asf':
         if not isinstance(filter_value, int):
-            raise RuntimeError, 'value used for the Alternate Sequential Filter must be a integer type'
+            raise RuntimeError('value used for the Alternate Sequential Filter must be a integer type')
         else:
-            for rad in xrange(1, ((filter_value + 1) / 2) + 1):
-                print "closing operations with structuring elements of size %s" % rad
+            for rad in range(1, ((filter_value + 1) / 2) + 1):
+                print("closing operations with structuring elements of size %s" % rad)
                 struct = euclidean_sphere(rad)
                 # ~ s=(rad,rad,rad)
                 img = grey_dilation(img, footprint=struct)
                 img = grey_erosion(img, footprint=struct)
 
                 if filter_value >= rad * 2:
-                    print "opening operations with structuring elements of size %s" % rad
+                    print("opening operations with structuring elements of size %s" % rad)
                     img = grey_erosion(img, footprint=struct)
                     img = grey_dilation(img, footprint=struct)
     else:
-        raise RuntimeError, 'filter type not supported'
+        raise RuntimeError('filter type not supported')
     return img
 
 
@@ -186,7 +186,7 @@ def segment_tv(imageFName, hmin, asf, sigma, resolution=(1, 1, 1), checkBackgrou
 
 
 def segment(tiff_file):
-    print "Segmenting, ", tiff_file
+    print("Segmenting, ", tiff_file)
 
     return 0
 
@@ -199,9 +199,9 @@ def open_alea_ex(args):
 
 
 def main(args):
-    print "Segmentation running!"
+    print("Segmentation running!")
 
-    print "im path is: ", args.tiff_file
+    print("im path is: ", args.tiff_file)
 
     segment_tv(args.tiff_file, 0.3, 0.3, 2)
 

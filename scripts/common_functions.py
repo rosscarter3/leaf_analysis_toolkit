@@ -65,8 +65,8 @@ def id_array2rgb(id_array):
         for column in range(id_array.shape[1]):
             c = id_array[row, column]
             r = int(c / (256 * 256)) % 256
-            g = int(c / (001 * 256)) % 256
-            b = int(c / (001 * 001)) % 256
+            g = int(c / (0o01 * 256)) % 256
+            b = int(c / (0o01 * 0o01)) % 256
             rgb_array[row, column] = (r, g, b)
     return rgb_array
 
@@ -117,7 +117,7 @@ def load_neighbours_dictionary_json(json_path):
     with open(json_path, "r") as input_handle:
         neighbours_dict_raw = json.load(input_handle)
 
-    neighbours_dict = {int(k): v for k, v in neighbours_dict_raw.iteritems()}
+    neighbours_dict = {int(k): v for k, v in neighbours_dict_raw.items()}
 
     return neighbours_dict
 
@@ -127,7 +127,7 @@ def load_junction_dict(junction_path):
     with open(junction_path, "r") as input_handle:
         junction_dict_raw = json.load(input_handle)
 
-    junction_dict = {int(k): v for k, v in junction_dict_raw.iteritems()}
+    junction_dict = {int(k): v for k, v in junction_dict_raw.items()}
 
     return junction_dict
 
@@ -144,7 +144,7 @@ def path2image_array(image_path):
 
 def generate_cell_outline_array(cid_array, color='black'):
     """generates a cell outline array for plotting heatmaps"""
-    print "Generating cell outlines..."
+    print("Generating cell outlines...")
     ele_ord = 1
 
     shape = (cid_array.shape[0], cid_array.shape[1], 4)
@@ -213,7 +213,7 @@ def load_junction_matches(matches_path):
     with open(matches_path, "r") as input_handle:
         junction_matches_raw = json.load(input_handle)
 
-    junction_matches = {int(k): v for k, v in junction_matches_raw.iteritems()}
+    junction_matches = {int(k): v for k, v in junction_matches_raw.items()}
 
     return junction_matches
 
@@ -236,18 +236,20 @@ def speak_complete(phrase='simulation finished'):
         command = ['say', phrase]
         subprocess.check_call(command)
     else:
-        print phrase
+        print(phrase)
 
 
 def rand_cmap(nlabels, type='bright', first_color_black=True, last_color_black=False, verbose=True):
     """
     from https://github.com/delestro/rand_cmap
-    Creates a random colormap to be used together with matplotlib. Useful for segmentation tasks
+    Creates a random colormap to be used together with matplotlib.
+     Useful for segmentation tasks
     :param nlabels: Number of labels (size of colormap)
     :param type: 'bright' for strong colors, 'soft' for pastel colors
     :param first_color_black: Option to use first color as black, True or False
     :param last_color_black: Option to use last color as black, True or False
-    :param verbose: Prints the number of labels and shows the colormap. True or False
+    :param verbose: Prints the number of labels and shows the colormap.
+                    True or False
     :return: colormap for matplotlib
     """
     from matplotlib.colors import LinearSegmentedColormap
@@ -259,13 +261,13 @@ def rand_cmap(nlabels, type='bright', first_color_black=True, last_color_black=F
         return
 
     if verbose:
-        print('Number of labels: ' + str(nlabels))
+        print(('Number of labels: ' + str(nlabels)))
 
     # Generate color map for bright colors, based on hsv
     if type == 'bright':
         randHSVcolors = [(np.random.uniform(low=0.0, high=1),
                           np.random.uniform(low=0.2, high=1),
-                          np.random.uniform(low=0.9, high=1)) for i in xrange(nlabels)]
+                          np.random.uniform(low=0.9, high=1)) for i in range(nlabels)]
 
         # Convert HSV list to RGB
         randRGBcolors = []
@@ -286,7 +288,7 @@ def rand_cmap(nlabels, type='bright', first_color_black=True, last_color_black=F
         high = 0.95
         randRGBcolors = [(np.random.uniform(low=low, high=high),
                           np.random.uniform(low=low, high=high),
-                          np.random.uniform(low=low, high=high)) for i in xrange(nlabels)]
+                          np.random.uniform(low=low, high=high)) for i in range(nlabels)]
 
         if first_color_black:
             randRGBcolors[0] = [0, 0, 0]
@@ -305,6 +307,6 @@ def rand_cmap(nlabels, type='bright', first_color_black=True, last_color_black=F
         norm = colors.BoundaryNorm(bounds, nlabels)
 
         cb = colorbar.ColorbarBase(ax, cmap=random_colormap, norm=norm, spacing='proportional', ticks=None,
-                                   boundaries=bounds, format='%1i', orientation=u'horizontal')
+                                   boundaries=bounds, format='%1i', orientation='horizontal')
 
     return random_colormap

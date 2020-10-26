@@ -13,7 +13,7 @@ import proj_lib as proj
 
 
 def flush_message(message):
-    print(message),
+    print((message), end=' ')
     sys.stdout.flush()
 
 
@@ -31,8 +31,8 @@ def load_image_stack(path):
             tmp_im = imread(os.path.join(path, tiff_file))
             if len(tmp_im.shape) == 2:
                 tmp_im2 = np.zeros([tmp_im.shape[0], tmp_im.shape[1], 3], dtype=np.uint8)
-                for i in xrange(tmp_im.shape[0]):
-                    for j in xrange(tmp_im.shape[1]):
+                for i in range(tmp_im.shape[0]):
+                    for j in range(tmp_im.shape[1]):
                         tmp_im2[i, j] = [tmp_im[i][j], 0, 0]
                 stack[:, :, z_id, :] = tmp_im2
             else:

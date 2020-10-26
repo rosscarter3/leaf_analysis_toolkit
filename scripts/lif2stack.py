@@ -79,15 +79,15 @@ def main():
 
     if args.im_list is not None:
         im_list = ast.literal_eval(args.im_list)
-        print "extracting ", im_list
+        print("extracting ", im_list)
     else:
         num_ims = detect_num_images(lif_path, bf_location)
-        im_list = range(num_ims)
-        print "extracting all"
+        im_list = list(range(num_ims))
+        print("extracting all")
 
     for im_number in im_list:
         name, size, resolution = parse_xml_metadata_2(xml_string, im_number)
-        print "extracting", name
+        print("extracting", name)
         output_dir_name = "proj_%s_%s_%s" % (lif_name, im_number, name.replace(" ", "_"))
         output_dir = os.path.join(lif_dir, output_dir_name)
 

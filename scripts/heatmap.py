@@ -23,7 +23,7 @@ def main():
     exp_dir = args.exp_dir
     seg_path = cf.get_seg_path(exp_dir)
     if not os.path.exists(seg_path):
-        print "Segmented Image not found\n"
+        print("Segmented Image not found\n")
         return
 
     # print seg_path
@@ -31,7 +31,7 @@ def main():
 
     data_path = os.path.join(exp_dir, "data.json")
     if not os.path.exists(data_path):
-        print "Data json file not found"
+        print("Data json file not found")
         return
     data_dict = load_json_data(data_path)
 
@@ -40,38 +40,38 @@ def main():
     if not os.path.exists(os.path.join(exp_dir, "heatmaps")):
         os.mkdir(os.path.join(exp_dir, "heatmaps"))
 
-    random_data = data_dict.itervalues().next()
-    data_to_plot = random_data.keys()
+    random_data = next(iter(data_dict.values()))
+    data_to_plot = list(random_data.keys())
 
     size, vox = cf.read_dims(exp_dir)
 
-    print size, vox
-    print size[0]*vox[0], ",", size[1]*vox[1]
+    print(size, vox)
+    print(size[0]*vox[0], ",", size[1]*vox[1])
 
     color_scheme = 'viridis'
     heatmap_shape = [id_array.shape[0], id_array.shape[1], 4]
     # TODO check extent
 
-    print heatmap_shape
+    print(heatmap_shape)
 
     xs, ys = [], []
-    for cell_data in data_dict.itervalues():
+    for cell_data in data_dict.values():
         xs.append(cell_data['Centroid-x_um'])
         ys.append(cell_data['Centroid-y_um'])
 
     im_height = id_array.shape[1] * vox[1]
     border = 0.07 * im_height
 
-    print "im height: ", im_height
+    print("im height: ", im_height)
 
     xlims = (min(xs) - border, max(xs) + border)
     ylims = ((im_height - max(ys)) - border, (im_height - min(ys)) + border)
 
-    print "xlim, ylim: ", xlims, ylims
+    print("xlim, ylim: ", xlims, ylims)
 
     extent = [xlims[0], xlims[1], ylims[0], ylims[1]]
 
-    print "extent: ", extent
+    print("extent: ", extent)
 
     def units_string(data_type):
         units = data_type.split("_")[1]
@@ -87,9 +87,9 @@ def main():
     def do_heatmap(data_type):
         data_list = []
 
-        for cell_data in data_dict.itervalues():
+        for cell_data in data_dict.values():
             data_list.append(cell_data[data_type])
-        print "Painting", data_type, ": ", min(data_list), max(data_list)
+        print("Painting", data_type, ": ", min(data_list), max(data_list))
 
         if "area" in data_type:
             norm = colors.LogNorm(vmin=min(data_list), vmax=max(data_list))
@@ -101,7 +101,7 @@ def main():
 
         heatmap = np.full(shape=heatmap_shape, fill_value=[0, 0, 0, 255], dtype='float32')
 
-        for cell_id, cell_data in data_dict.iteritems():
+        for cell_id, cell_data in data_dict.items():
             if 'Density' in data_type and float(cell_data[data_type]) < 0.7:
                 color = color_map.to_rgba(cell_data[data_type])
                 col_list = list(color)
@@ -135,7 +135,7 @@ def main():
 
     def do_cell_outlines():
 
-        print "Painting Cell Outlines"
+        print("Painting Cell Outlines")
 
         plt.figure(figsize=(10, 10))
         ax1 = plt.subplot(111)
