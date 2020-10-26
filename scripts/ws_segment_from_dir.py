@@ -20,7 +20,7 @@ def get_im_paths(exp_dir):
             #     im_path.append(os.path.abspath(os.path.join(dirpath, f)))
             if f.endswith('_proj-g3d_rev.png') or f.endswith('_proj_g3d_rev.png'):
                 im_path.append(os.path.abspath(os.path.join(dirpath, f)))
-    print "got image paths!"
+    print("got image paths!")
     return im_path
 
 
@@ -30,7 +30,7 @@ def get_seeds_path(exp_dir):
         for f in filenames:
             if "manual" in f:
                 seeds_path = os.path.abspath(os.path.join(dirpath, f))
-    print "Got seeds path!"
+    print("Got seeds path!")
     return seeds_path
 
 
