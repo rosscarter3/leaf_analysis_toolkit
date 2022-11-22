@@ -7,7 +7,7 @@ jicbioimage.transform==0.6.0
 jicgeometry==0.6.0
 matplotlib==2.0.2
 numpy==1.22.0
-Pillow==9.0.1
+Pillow==9.3.0
 python-bioformats==1.0.9
 scikit-image==0.12.3
 scipy==0.19.0
